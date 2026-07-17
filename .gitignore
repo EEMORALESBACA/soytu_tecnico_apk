@@ -1,0 +1,6 @@
+# Sibling app not part of this repo's scope
+soytu_admin_apk/
+
+# Editor/OS
+.vscode/
+.DS_Store
