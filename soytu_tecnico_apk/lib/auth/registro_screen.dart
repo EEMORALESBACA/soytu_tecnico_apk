@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:soytu_core/soytu_core.dart';
 
 import '../providers/providers.dart';
+import '../services/alta_notificaciones.dart';
 import '../widgets/captura_camara.dart';
 import 'espera_aprobacion_screen.dart';
 
@@ -68,6 +69,9 @@ class _RegistroScreenState extends ConsumerState<RegistroScreen> {
             fcmToken: fcmToken,
             fechaRegistro: DateTime.now(),
           ));
+
+      if (!mounted) return;
+      await AltaNotificaciones.solicitudEnviada(context, nombreTecnico: _nombreCtrl.text.trim());
 
       if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
