@@ -10,13 +10,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Java 17
+      - name: Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
 
-      - name: Flutter estable
+      - name: Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.44.6'
@@ -24,49 +24,13 @@ jobs:
 
       - name: Localizar proyecto Flutter
         run: |
-          PUB=$(find . -maxdepth 4 -name pubspec.yaml -not -path "*/.*/*" | head -1)
+          PUB=$(find . -maxdepth 4 -name pubspec.yaml -not -path "*/.*/*" -not -path "*/packages/*" | head -1)
           if [ -z "$PUB" ]; then
-            echo "ERROR: no se encontro pubspec.yaml en el repositorio."
-            echo "Estructura actual del repo:"
-            find . -maxdepth 2 -not -path "*/.git*" | sort
-            exit 1
+            echo "ERROR: no se encontro pubspec.yaml"; find . -maxdepth 2 -not -path "*/.git*" | sort; exit 1
           fi
           DIR=$(dirname "$PUB")
-          echo "Proyecto Flutter encontrado en: $DIR"
-          if [ ! -d "$DIR/lib" ]; then
-            echo "ERROR: existe pubspec.yaml en $DIR pero no hay carpeta lib/ junto a el."
-            ls -la "$DIR"
-            exit 1
-          fi
+          echo "Proyecto Flutter en: $DIR"
           echo "PROJ_DIR=$DIR" >> $GITHUB_ENV
-
-      - name: Generar plataforma Android
-        run: |
-          cd "$PROJ_DIR"
-          mkdir -p /tmp/src
-          cp -r lib /tmp/src/
-          cp pubspec.yaml /tmp/src/
-          flutter create . --org com.soytu --project-name soytu_tecnico --platforms android
-          rm -rf lib pubspec.yaml
-          cp -r /tmp/src/lib ./
-          cp /tmp/src/pubspec.yaml ./
-
-      - name: Permisos y minSdk
-        run: |
-          cd "$PROJ_DIR"
-          MANIFEST=android/app/src/main/AndroidManifest.xml
-          sed -i 's|<application|<uses-permission android:name="android.permission.INTERNET"/><uses-permission android:name="android.permission.CAMERA"/><uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/><uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/><application|' "$MANIFEST"
-          sed -i 's/flutter.minSdkVersion/23/g' android/app/build.gradle || true
-          if [ -f android/app/build.gradle.kts ]; then
-            sed -i 's/flutter.minSdkVersion/23/g' android/app/build.gradle.kts
-          fi
-          for G in android/app/build.gradle android/app/build.gradle.kts; do
-            if [ -f "$G" ]; then
-              sed -i 's/applicationId = "com.soytu.soytu_tecnico"/applicationId = "com.soytu.tecnico"/' "$G"
-              sed -i 's/applicationId "com.soytu.soytu_tecnico"/applicationId "com.soytu.tecnico"/' "$G"
-            fi
-          done
-          sed -i 's/android:label="soytu_tecnico"/android:label="SOYTU Técnico"/' "$MANIFEST" || true
 
       - name: Dependencias
         run: cd "$PROJ_DIR" && flutter pub get
