@@ -1,10 +1,8 @@
 name: Build APK SOYTU Tecnico
-
 on:
   push:
     branches: [ master ]
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,11 +22,27 @@ jobs:
           flutter-version: '3.24.5'
           channel: stable
 
-      # El repo solo trae lib/ y pubspec.yaml. Aqui se genera la
-      # plataforma Android completa (gradle, wrapper, manifest, etc.)
-      # protegiendo nuestro codigo fuente.
+      - name: Localizar proyecto Flutter
+        run: |
+          PUB=$(find . -maxdepth 4 -name pubspec.yaml -not -path "*/.*/*" | head -1)
+          if [ -z "$PUB" ]; then
+            echo "ERROR: no se encontro pubspec.yaml en el repositorio."
+            echo "Estructura actual del repo:"
+            find . -maxdepth 2 -not -path "*/.git*" | sort
+            exit 1
+          fi
+          DIR=$(dirname "$PUB")
+          echo "Proyecto Flutter encontrado en: $DIR"
+          if [ ! -d "$DIR/lib" ]; then
+            echo "ERROR: existe pubspec.yaml en $DIR pero no hay carpeta lib/ junto a el."
+            ls -la "$DIR"
+            exit 1
+          fi
+          echo "PROJ_DIR=$DIR" >> $GITHUB_ENV
+
       - name: Generar plataforma Android
         run: |
+          cd "$PROJ_DIR"
           mkdir -p /tmp/src
           cp -r lib /tmp/src/
           cp pubspec.yaml /tmp/src/
@@ -39,13 +53,13 @@ jobs:
 
       - name: Permisos y minSdk
         run: |
+          cd "$PROJ_DIR"
           MANIFEST=android/app/src/main/AndroidManifest.xml
           sed -i 's|<application|<uses-permission android:name="android.permission.INTERNET"/><uses-permission android:name="android.permission.CAMERA"/><uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/><uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/><application|' "$MANIFEST"
           sed -i 's/flutter.minSdkVersion/23/g' android/app/build.gradle || true
           if [ -f android/app/build.gradle.kts ]; then
             sed -i 's/flutter.minSdkVersion/23/g' android/app/build.gradle.kts
           fi
-          # applicationId identico a la app registrada en Firebase
           for G in android/app/build.gradle android/app/build.gradle.kts; do
             if [ -f "$G" ]; then
               sed -i 's/applicationId = "com.soytu.soytu_tecnico"/applicationId = "com.soytu.tecnico"/' "$G"
@@ -55,7 +69,7 @@ jobs:
           sed -i 's/android:label="soytu_tecnico"/android:label="SOYTU Técnico"/' "$MANIFEST" || true
 
       - name: Dependencias
-        run: flutter pub get
+        run: cd "$PROJ_DIR" && flutter pub get
 
       - name: Llave de firma fija SOYTU
         run: |
@@ -68,10 +82,10 @@ jobs:
           fi
 
       - name: Compilar APK release
-        run: flutter build apk --release
+        run: cd "$PROJ_DIR" && flutter build apk --release
 
       - name: Publicar APK como artefacto
         uses: actions/upload-artifact@v4
         with:
           name: soytu-tecnico-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: ${{ env.PROJ_DIR }}/build/app/outputs/flutter-apk/app-release.apk
