@@ -63,7 +63,8 @@ class ListaServiciosScreen extends ConsumerWidget {
                     child: const Icon(Icons.build, color: Colors.white, size: 18),
                   ),
                   title: Text('${s.equipoTipo} ${s.marca} · ${s.folio}'),
-                  subtitle: Text('${s.clienteNombre}\n${s.estadoAsignacion.etiqueta}'),
+                  subtitle: Text(
+                      '${s.clienteNombre}\n${s.tipoServicio == 'cargo' ? '💰 CARGO' : '🛡️ GARANTÍA'} · ${s.estadoAsignacion.etiqueta}'),
                   isThreeLine: true,
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.of(context)

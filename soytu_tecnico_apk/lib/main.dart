@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -7,12 +8,28 @@ import 'package:soytu_core/soytu_core.dart';
 import 'auth/login_screen.dart';
 import 'auth/espera_aprobacion_screen.dart';
 import 'providers/providers.dart';
+import 'services/notificaciones_locales.dart';
 import 'servicios/lista_servicios_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('es_MX'); // fechas en español
   await Firebase.initializeApp();
+  await NotificacionesLocales.inicializar();
+
+  // Push FCM recibido con la app abierta → alerta insistente local.
+  FirebaseMessaging.onMessage.listen((mensaje) {
+    final datos = mensaje.data;
+    if (datos['tipo'] == 'nuevo_servicio') {
+      NotificacionesLocales.nuevoServicio(
+        datos['servicioId'] ?? mensaje.messageId ?? 'srv',
+        mensaje.notification?.title ?? '🔔 Nuevo servicio SOYTU',
+        mensaje.notification?.body ??
+            'Tienes un servicio nuevo. Entra y acéptalo para detener la alerta.',
+      );
+    }
+  });
+
   runApp(const ProviderScope(child: SoytuApp()));
 }
 
@@ -46,6 +63,32 @@ class _RaizAppState extends ConsumerState<_RaizApp> {
   @override
   Widget build(BuildContext context) {
     final sesion = ref.watch(sesionProvider);
+
+    // Vigila los servicios del técnico: cada servicio en estado "asignado"
+    // dispara la alerta insistente; al aceptarse (o reasignarse) se apaga.
+    ref.listen(serviciosAsignadosProvider, (previo, actual) {
+      final lista = actual.value;
+      if (lista == null) return;
+      for (final s in lista) {
+        if (s.estadoAsignacion == EstadoAsignacion.asignado) {
+          final tipo = s.tipoServicio == 'cargo' ? 'CARGO' : 'GARANTÍA';
+          NotificacionesLocales.nuevoServicio(
+            s.id,
+            '🔔 Nuevo servicio SOYTU',
+            'Folio ${s.folio}: ${s.clienteNombre} · ${s.equipoTipo} ${s.marca} · $tipo. '
+                'Entra y acéptalo para detener la alerta.',
+          );
+        } else {
+          NotificacionesLocales.cancelarServicio(s.id);
+        }
+      }
+      final anteriores = previo?.value ?? const <ServicioAsignado>[];
+      for (final p in anteriores) {
+        if (!lista.any((s) => s.id == p.id)) {
+          NotificacionesLocales.cancelarServicio(p.id);
+        }
+      }
+    });
 
     return sesion.when(
       loading: () => const _Cargando(),

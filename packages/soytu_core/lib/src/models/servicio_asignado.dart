@@ -61,6 +61,9 @@ class ServicioAsignado {
   final String numeroSerie;
   final String fallaReportada;
 
+  /// 'garantia' o 'cargo' (con costo al cliente).
+  final String tipoServicio;
+
   final DateTime fechaCreacion;
   final DateTime? fechaAsignado;
   final DateTime? fechaAceptado;
@@ -88,6 +91,7 @@ class ServicioAsignado {
     required this.modelo,
     required this.numeroSerie,
     required this.fallaReportada,
+    this.tipoServicio = 'garantia',
     required this.fechaCreacion,
     this.fechaAsignado,
     this.fechaAceptado,
@@ -114,6 +118,7 @@ class ServicioAsignado {
         'modelo': modelo,
         'numeroSerie': numeroSerie,
         'fallaReportada': fallaReportada,
+        'tipoServicio': tipoServicio,
         'fechaCreacion': fechaCreacion.toIso8601String(),
         'fechaAsignado': fechaAsignado?.toIso8601String(),
         'fechaAceptado': fechaAceptado?.toIso8601String(),
@@ -146,6 +151,7 @@ class ServicioAsignado {
       modelo: map['modelo'] as String,
       numeroSerie: map['numeroSerie'] as String,
       fallaReportada: map['fallaReportada'] as String,
+      tipoServicio: map['tipoServicio'] as String? ?? 'garantia',
       fechaCreacion: DateTime.parse(map['fechaCreacion'] as String),
       fechaAsignado: fecha('fechaAsignado'),
       fechaAceptado: fecha('fechaAceptado'),
@@ -186,6 +192,7 @@ class ServicioAsignado {
       modelo: modelo,
       numeroSerie: numeroSerie,
       fallaReportada: fallaReportada,
+      tipoServicio: tipoServicio,
       fechaCreacion: fechaCreacion,
       fechaAsignado: fechaAsignado ?? this.fechaAsignado,
       fechaAceptado: fechaAceptado ?? this.fechaAceptado,

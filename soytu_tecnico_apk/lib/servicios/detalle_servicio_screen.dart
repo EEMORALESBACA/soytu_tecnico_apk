@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:soytu_core/soytu_core.dart';
 
 import '../providers/providers.dart';
+import '../services/notificaciones_locales.dart';
 import 'formulario_servicio_screen.dart';
 
 const _indigo = Color(0xFF1A237E);
@@ -37,6 +38,30 @@ class _DetalleServicioScreenState extends ConsumerState<DetalleServicioScreen> {
     super.dispose();
   }
 
+  /// Normaliza un teléfono de México a formato internacional para wa.me.
+  String _telWa(String tel) {
+    var t = tel.replaceAll(RegExp(r'[^0-9]'), '');
+    if (t.length == 10) return '521$t';
+    if (t.length == 12 && t.startsWith('52')) return '521${t.substring(2)}';
+    return t;
+  }
+
+  Future<void> _confirmarPorWhatsApp(ServicioAsignado s) async {
+    if (s.clienteTelefono == null) return;
+    final msj = Uri.encodeComponent(
+        'Hola ${s.clienteNombre}, soy su técnico SOYTU para el servicio ${s.folio} '
+        '(${s.equipoTipo} ${s.marca}). ¿Me confirma que se encontrará en el domicilio '
+        'para agendar mi visita? — SOYTU · Creando Conexiones');
+    final uri = Uri.parse('https://wa.me/${_telWa(s.clienteTelefono!)}?text=$msj');
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  Future<void> _confirmarPorLlamada(ServicioAsignado s) async {
+    if (s.clienteTelefono == null) return;
+    final uri = Uri(scheme: 'tel', path: s.clienteTelefono!);
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
   Future<bool> _asegurarPermisoUbicacion() async {
     var permiso = await Geolocator.checkPermission();
     if (permiso == LocationPermission.denied) {
@@ -62,8 +87,8 @@ class _DetalleServicioScreenState extends ConsumerState<DetalleServicioScreen> {
         final mensaje = Uri.encodeComponent(
             'SOYTU — su técnico ya va en camino a su domicilio para el servicio ${s.folio}. '
             'En breve podrá ver su ubicación en tiempo real aquí: '
-            'https://soytu.com.mx/tracking.html?servicio=${s.id}');
-        final uriWhatsapp = Uri.parse('https://wa.me/${s.clienteTelefono}?text=$mensaje');
+            'https://soytu.com.mx/soytu/tracking.html?id=${s.id}');
+        final uriWhatsapp = Uri.parse('https://wa.me/${_telWa(s.clienteTelefono!)}?text=$mensaje');
         if (await canLaunchUrl(uriWhatsapp)) {
           await launchUrl(uriWhatsapp, mode: LaunchMode.externalApplication);
         }
@@ -97,6 +122,7 @@ class _DetalleServicioScreenState extends ConsumerState<DetalleServicioScreen> {
     setState(() => _procesando = true);
     try {
       await ref.read(servicioRepositoryProvider).aceptar(id);
+      await NotificacionesLocales.cancelarServicio(id);
     } finally {
       if (mounted) setState(() => _procesando = false);
     }
@@ -141,13 +167,44 @@ class _DetalleServicioScreenState extends ConsumerState<DetalleServicioScreen> {
                     icon: const Icon(Icons.check),
                     label: const Text('Aceptar servicio'),
                   ),
-                if (s.estadoAsignacion == EstadoAsignacion.aceptado)
+                if (s.estadoAsignacion == EstadoAsignacion.aceptado) ...[
+                  if (s.clienteTelefono != null) ...[
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 6),
+                      child: Text('Confirma el servicio con el cliente antes de salir:',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 12.5, color: Color(0xFF4A4F63))),
+                    ),
+                    Row(children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF25D366), foregroundColor: Colors.white),
+                          onPressed: _procesando ? null : () => _confirmarPorWhatsApp(s),
+                          icon: const Icon(Icons.chat),
+                          label: const Text('WhatsApp'),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: _indigo, foregroundColor: Colors.white),
+                          onPressed: _procesando ? null : () => _confirmarPorLlamada(s),
+                          icon: const Icon(Icons.phone),
+                          label: const Text('Llamar'),
+                        ),
+                      ),
+                    ]),
+                    const SizedBox(height: 12),
+                  ],
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(backgroundColor: _indigo, foregroundColor: Colors.white),
                     onPressed: _procesando ? null : () => _acudir(s),
                     icon: const Icon(Icons.directions),
                     label: const Text('Acudir'),
                   ),
+                ],
                 if (s.estadoAsignacion == EstadoAsignacion.enCamino) ...[
                   const _EnCaminoAviso(),
                   if (_distanciaMetros != null) ...[
