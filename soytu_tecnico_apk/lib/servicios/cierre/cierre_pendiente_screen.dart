@@ -26,9 +26,29 @@ class CierrePendienteScreen extends ConsumerStatefulWidget {
 class _CierrePendienteScreenState extends ConsumerState<CierrePendienteScreen> {
   String _motivo = 'Refacción';
   final Set<String> _refaccionesSeleccionadas = {};
+  final _otraRefaccionCtrl = TextEditingController();
   bool _procesando = false;
 
+  List<String> get _refaccionesFinales => [
+        ..._refaccionesSeleccionadas,
+        if (_otraRefaccionCtrl.text.trim().isNotEmpty)
+          _otraRefaccionCtrl.text.trim(),
+      ];
+
+  String _telWa(String tel) {
+    var t = tel.replaceAll(RegExp(r'[^0-9]'), '');
+    if (t.length == 10) return '521$t';
+    if (t.length == 12 && t.startsWith('52')) return '521${t.substring(2)}';
+    return t;
+  }
+
   Future<void> _cerrarServicio() async {
+    if (_motivo == 'Refacción' && _refaccionesFinales.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Selecciona al menos una refacción faltante (o escríbela en "Otra refacción").')));
+      return;
+    }
     setState(() => _procesando = true);
     try {
       final s = widget.servicio;
@@ -57,7 +77,7 @@ class _CierrePendienteScreenState extends ConsumerState<CierrePendienteScreen> {
         fotoPlaca: widget.datos.fotoPlaca,
         fotoFalla: widget.datos.fotoFalla,
         motivoPendiente: _motivo,
-        refaccionesFaltantes: _motivo == 'Refacción' ? _refaccionesSeleccionadas.toList() : const [],
+        refaccionesFaltantes: _motivo == 'Refacción' ? _refaccionesFinales : const [],
       );
 
       final pdfBytes = await HojaServicioPdf().generar(orden);
@@ -68,7 +88,14 @@ class _CierrePendienteScreenState extends ConsumerState<CierrePendienteScreen> {
         await ref.read(servicioRepositoryProvider).actualizarVideoFalla(s.id, videoUrl);
       }
 
-      await ref.read(servicioRepositoryProvider).cerrar(s.id, estadoFinal: EstadoServicio.pendiente, pdfUrl: pdfUrl);
+      await ref.read(servicioRepositoryProvider).cerrar(
+            s.id,
+            estadoFinal: EstadoServicio.pendiente,
+            pdfUrl: pdfUrl,
+            motivoPendiente: _motivo,
+            refaccionesFaltantes:
+                _motivo == 'Refacción' ? _refaccionesFinales : const [],
+          );
 
       final dir = await getApplicationDocumentsDirectory();
       final archivo = File('${dir.path}/HojaServicio_${s.folio}.pdf');
@@ -81,7 +108,7 @@ class _CierrePendienteScreenState extends ConsumerState<CierrePendienteScreen> {
       if (s.clienteTelefono != null) {
         final mensaje = Uri.encodeComponent(
             'Su servicio ${s.folio} quedó PENDIENTE por $_motivo. Le compartimos la hoja de servicio con el detalle. — SOYTU');
-        final uri = Uri.parse('https://wa.me/${s.clienteTelefono}?text=$mensaje');
+        final uri = Uri.parse('https://wa.me/${_telWa(s.clienteTelefono!)}?text=$mensaje');
         if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
       }
 
@@ -133,6 +160,14 @@ class _CierrePendienteScreenState extends ConsumerState<CierrePendienteScreen> {
                               setState(() => v ? _refaccionesSeleccionadas.add(r) : _refaccionesSeleccionadas.remove(r)),
                         ))
                     .toList(),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _otraRefaccionCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Otra refacción (escríbela si no está en la lista)',
+                  border: OutlineInputBorder(),
+                ),
               ),
             ],
             const SizedBox(height: 20),

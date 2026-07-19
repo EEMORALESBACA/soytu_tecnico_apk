@@ -143,7 +143,10 @@ class HojaServicioPdf {
                         .toList(),
                   )
                 else
-                  pw.Text('Pendiente por actualización de software.',
+                  pw.Text(
+                      orden.motivoPendiente == 'Software'
+                          ? 'Pendiente por actualización de software.'
+                          : 'Pendiente por refacción (ver detalle con el técnico).',
                       style: const pw.TextStyle(fontSize: 9.5)),
               ],
             ),

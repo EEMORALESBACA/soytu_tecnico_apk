@@ -68,11 +68,19 @@ class ServicioRepository {
   Future<void> actualizarVideoFalla(String id, String videoUrl) =>
       _col.doc(id).update({'videoFallaUrl': videoUrl});
 
-  Future<void> cerrar(String id, {required EstadoServicio estadoFinal, String? pdfUrl}) =>
+  Future<void> cerrar(
+    String id, {
+    required EstadoServicio estadoFinal,
+    String? pdfUrl,
+    String? motivoPendiente,
+    List<String> refaccionesFaltantes = const [],
+  }) =>
       _col.doc(id).update({
         'estadoAsignacion': EstadoAsignacion.cerrado.name,
         'estadoFinal': estadoFinal.name,
         'pdfUrl': pdfUrl,
+        'motivoPendiente': motivoPendiente,
+        'refaccionesFaltantes': refaccionesFaltantes,
         'fechaCierre': DateTime.now().toIso8601String(),
       });
 
