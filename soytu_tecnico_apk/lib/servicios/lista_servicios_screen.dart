@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soytu_core/soytu_core.dart';
 
 import '../providers/providers.dart';
+import '../services/ubicacion_global.dart';
 import 'detalle_servicio_screen.dart';
 
 const _indigo = Color(0xFF1A237E);
@@ -32,7 +33,10 @@ class ListaServiciosScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () => ref.read(authServiceProvider).cerrarSesion(),
+            onPressed: () async {
+              await UbicacionGlobal.detener();
+              await ref.read(authServiceProvider).cerrarSesion();
+            },
           ),
         ],
       ),

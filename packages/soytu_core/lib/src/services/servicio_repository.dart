@@ -28,6 +28,13 @@ class ServicioRepository {
       .snapshots()
       .map((s) => s.docs.map((d) => ServicioAsignado.fromMap(d.id, d.data())).toList());
 
+  /// TODOS los servicios del técnico (activos y cerrados) para la pestaña
+  /// de productividad. Un solo filtro de igualdad: no requiere índice.
+  Stream<List<ServicioAsignado>> observarHistorial(String technicianId) => _col
+      .where('technicianId', isEqualTo: technicianId)
+      .snapshots()
+      .map((s) => s.docs.map((d) => ServicioAsignado.fromMap(d.id, d.data())).toList());
+
   Stream<List<ServicioAsignado>> observarTodos() => _col
       .orderBy('fechaCreacion', descending: true)
       .snapshots()

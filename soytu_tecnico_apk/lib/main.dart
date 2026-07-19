@@ -9,7 +9,8 @@ import 'auth/login_screen.dart';
 import 'auth/espera_aprobacion_screen.dart';
 import 'providers/providers.dart';
 import 'services/notificaciones_locales.dart';
-import 'servicios/lista_servicios_screen.dart';
+import 'services/ubicacion_global.dart';
+import 'servicios/home_tabs.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -94,7 +95,10 @@ class _RaizAppState extends ConsumerState<_RaizApp> {
       loading: () => const _Cargando(),
       error: (e, _) => Scaffold(body: Center(child: Text('Error: $e'))),
       data: (usuario) {
-        if (usuario == null) return const LoginScreen();
+        if (usuario == null) {
+          UbicacionGlobal.detener();
+          return const LoginScreen();
+        }
 
         final tecnico = ref.watch(tecnicoActualProvider);
         return tecnico.when(
@@ -113,9 +117,11 @@ class _RaizAppState extends ConsumerState<_RaizApp> {
                 await ref.read(tecnicoRepositoryProvider).actualizarFcmToken(t.uid, token);
               }
               await notificationService.suscribirATema('admins');
+              // Publica la ubicación del técnico para el mapa del panel admin.
+              await UbicacionGlobal.iniciar(t.uid, ref.read(tecnicoRepositoryProvider));
             });
 
-            return const ListaServiciosScreen();
+            return const HomeTabs();
           },
         );
       },

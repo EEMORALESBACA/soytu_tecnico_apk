@@ -62,6 +62,72 @@ class _DetalleServicioScreenState extends ConsumerState<DetalleServicioScreen> {
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
+  /// Deja elegir Google Maps o Waze y (opcional) recuerda la elección
+  /// en tecnicos/{uid}.navPreferida para no volver a preguntar.
+  Future<String?> _elegirNavegador() async {
+    final tecnico = ref.read(tecnicoActualProvider).value;
+    if (tecnico?.navPreferida == 'maps' || tecnico?.navPreferida == 'waze') {
+      return tecnico!.navPreferida;
+    }
+    bool recordar = true;
+    return showDialog<String>(
+      context: context,
+      builder: (c) => StatefulBuilder(
+        builder: (c, setD) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          title: const Text('¿Con qué app quieres navegar?'),
+          content: Column(mainAxisSize: MainAxisSize.min, children: [
+            ListTile(
+              leading: const Icon(Icons.map, color: Color(0xFF34A853)),
+              title: const Text('Google Maps'),
+              onTap: () => Navigator.pop(c, 'maps'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.navigation, color: Color(0xFF33CCFF)),
+              title: const Text('Waze'),
+              onTap: () => Navigator.pop(c, 'waze'),
+            ),
+            CheckboxListTile(
+              value: recordar,
+              onChanged: (v) => setD(() => recordar = v ?? true),
+              title: const Text('Recordar mi elección', style: TextStyle(fontSize: 13.5)),
+              controlAffinity: ListTileControlAffinity.leading,
+            ),
+          ]),
+        ),
+      ),
+    ).then((eleccion) async {
+      if (eleccion != null && recordar && tecnico != null) {
+        await ref.read(tecnicoRepositoryProvider).actualizarNavPreferida(tecnico.uid, eleccion);
+      }
+      return eleccion;
+    });
+  }
+
+  Future<void> _abrirNavegacion(String app, double lat, double lng) async {
+    final uri = app == 'waze'
+        ? Uri.parse('https://waze.com/ul?ll=' '$lat,$lng&navigate=yes')
+        : Uri.parse('google.navigation:q=' '$lat,$lng');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      await launchUrl(Uri.parse('geo:' '$lat,$lng?q=$lat,$lng'),
+          mode: LaunchMode.externalApplication);
+    }
+  }
+
+  /// Respaldo manual de la liga de rastreo (el envío principal es automático
+  /// vía WhatsApp Cloud API desde el servidor SOYTU al pasar a "en camino").
+  Future<void> _reenviarLiga(ServicioAsignado s) async {
+    if (s.clienteTelefono == null) return;
+    final mensaje = Uri.encodeComponent(
+        'SOYTU — su técnico ya va en camino para el servicio ' '${s.folio}. '
+        'Siga su ubicación en tiempo real: https://soytu.com.mx/soytu/tracking.html?id=' '${s.id}');
+    await launchUrl(
+        Uri.parse('https://wa.me/' '${_telWa(s.clienteTelefono!)}?text=$mensaje'),
+        mode: LaunchMode.externalApplication);
+  }
+
   Future<bool> _asegurarPermisoUbicacion() async {
     var permiso = await Geolocator.checkPermission();
     if (permiso == LocationPermission.denied) {
@@ -72,26 +138,16 @@ class _DetalleServicioScreenState extends ConsumerState<DetalleServicioScreen> {
 
   Future<void> _acudir(ServicioAsignado s) async {
     if (!await _asegurarPermisoUbicacion()) return;
+    final navApp = await _elegirNavegador();
+    if (navApp == null) return; // canceló el diálogo
     setState(() => _procesando = true);
     try {
+      // Al pasar a "en camino", el servidor SOYTU envía automáticamente al
+      // cliente el WhatsApp con la liga de rastreo, foto del técnico y placas.
       await ref.read(servicioRepositoryProvider).marcarEnCamino(s.id);
 
       if (s.clienteLat != null && s.clienteLng != null) {
-        final uriNavegacion = Uri.parse('geo:${s.clienteLat},${s.clienteLng}?q=${s.clienteLat},${s.clienteLng}');
-        if (await canLaunchUrl(uriNavegacion)) {
-          await launchUrl(uriNavegacion, mode: LaunchMode.externalApplication);
-        }
-      }
-
-      if (s.clienteTelefono != null) {
-        final mensaje = Uri.encodeComponent(
-            'SOYTU — su técnico ya va en camino a su domicilio para el servicio ${s.folio}. '
-            'En breve podrá ver su ubicación en tiempo real aquí: '
-            'https://soytu.com.mx/soytu/tracking.html?id=${s.id}');
-        final uriWhatsapp = Uri.parse('https://wa.me/${_telWa(s.clienteTelefono!)}?text=$mensaje');
-        if (await canLaunchUrl(uriWhatsapp)) {
-          await launchUrl(uriWhatsapp, mode: LaunchMode.externalApplication);
-        }
+        await _abrirNavegacion(navApp, s.clienteLat!, s.clienteLng!);
       }
 
       _iniciarRastreo(s.id, s.clienteLat, s.clienteLng);
@@ -207,6 +263,13 @@ class _DetalleServicioScreenState extends ConsumerState<DetalleServicioScreen> {
                 ],
                 if (s.estadoAsignacion == EstadoAsignacion.enCamino) ...[
                   const _EnCaminoAviso(),
+                  const SizedBox(height: 8),
+                  if (s.clienteTelefono != null)
+                    OutlinedButton.icon(
+                      onPressed: () => _reenviarLiga(s),
+                      icon: const Icon(Icons.share_location),
+                      label: const Text('Reenviar liga de rastreo al cliente'),
+                    ),
                   if (_distanciaMetros != null) ...[
                     const SizedBox(height: 8),
                     Text('Distancia al domicilio: ${_distanciaMetros!.toStringAsFixed(0)} m',
@@ -280,7 +343,8 @@ class _EnCaminoAviso extends StatelessWidget {
           Icon(Icons.local_shipping_outlined, color: _indigo),
           SizedBox(height: 6),
           Text(
-            'Vas en camino. El cliente ya recibió la liga de rastreo en vivo. '
+            'Vas en camino. SOYTU envió automáticamente al cliente la liga de '
+            'rastreo en vivo por WhatsApp, con tu foto y las placas de tu auto. '
             'En cuanto llegues al domicilio se habilitará "Iniciar servicio".',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 12.5, color: Color(0xFF4A4F63)),

@@ -32,6 +32,12 @@ class Tecnico {
   final DateTime fechaRegistro;
   final String? motivoRechazo;
 
+  /// Placas del vehículo con el que acude a los servicios.
+  final String? placas;
+
+  /// App de navegación preferida al acudir: 'maps' o 'waze'.
+  final String? navPreferida;
+
   const Tecnico({
     required this.uid,
     required this.nombre,
@@ -43,6 +49,8 @@ class Tecnico {
     this.fcmToken,
     required this.fechaRegistro,
     this.motivoRechazo,
+    this.placas,
+    this.navPreferida,
   });
 
   Map<String, dynamic> toMap() => {
@@ -55,6 +63,8 @@ class Tecnico {
         'fcmToken': fcmToken,
         'fechaRegistro': fechaRegistro.toIso8601String(),
         'motivoRechazo': motivoRechazo,
+        'placas': placas,
+        'navPreferida': navPreferida,
       };
 
   factory Tecnico.fromMap(String uid, Map<String, dynamic> map) => Tecnico(
@@ -68,5 +78,7 @@ class Tecnico {
         fcmToken: map['fcmToken'] as String?,
         fechaRegistro: DateTime.parse(map['fechaRegistro'] as String),
         motivoRechazo: map['motivoRechazo'] as String?,
+        placas: map['placas'] as String?,
+        navPreferida: map['navPreferida'] as String?,
       );
 }

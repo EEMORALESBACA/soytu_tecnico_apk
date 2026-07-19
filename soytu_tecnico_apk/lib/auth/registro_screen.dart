@@ -29,6 +29,7 @@ class _RegistroScreenState extends ConsumerState<RegistroScreen> {
   final _telefonoCtrl = TextEditingController();
   final _correoCtrl = TextEditingController();
   final _contrasenaCtrl = TextEditingController();
+  final _placasCtrl = TextEditingController();
 
   Uint8List? _selfie;
   Uint8List? _ine;
@@ -68,6 +69,7 @@ class _RegistroScreenState extends ConsumerState<RegistroScreen> {
             ineUrl: ineUrl,
             fcmToken: fcmToken,
             fechaRegistro: DateTime.now(),
+            placas: _placasCtrl.text.trim().isEmpty ? null : _placasCtrl.text.trim().toUpperCase(),
           ));
 
       if (!mounted) return;
@@ -126,6 +128,16 @@ class _RegistroScreenState extends ConsumerState<RegistroScreen> {
                   obscureText: true,
                   decoration: const InputDecoration(labelText: 'Contraseña', border: OutlineInputBorder()),
                   validator: (v) => (v == null || v.length < 6) ? 'Mínimo 6 caracteres' : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _placasCtrl,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: const InputDecoration(
+                      labelText: 'Placas de tu vehículo',
+                      helperText: 'El cliente las verá para identificarte al llegar',
+                      border: OutlineInputBorder()),
+                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Requerido' : null,
                 ),
                 const SizedBox(height: 20),
                 const Text('Verificación de identidad',

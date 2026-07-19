@@ -38,4 +38,20 @@ class TecnicoRepository {
 
   Future<void> actualizarFcmToken(String uid, String token) =>
       _col.doc(uid).update({'fcmToken': token});
+
+  /// Última ubicación conocida del técnico (para el mapa del panel admin).
+  Future<void> actualizarUbicacion(String uid, double lat, double lng) =>
+      _col.doc(uid).update({
+        'ubicacion': {
+          'lat': lat,
+          'lng': lng,
+          'actualizado': DateTime.now().toIso8601String(),
+        },
+      });
+
+  Future<void> actualizarNavPreferida(String uid, String app) =>
+      _col.doc(uid).update({'navPreferida': app});
+
+  Future<void> actualizarPlacas(String uid, String placas) =>
+      _col.doc(uid).update({'placas': placas});
 }
