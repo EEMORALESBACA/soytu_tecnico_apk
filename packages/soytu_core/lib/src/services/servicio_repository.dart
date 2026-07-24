@@ -74,6 +74,12 @@ class ServicioRepository {
     String? pdfUrl,
     String? motivoPendiente,
     List<String> refaccionesFaltantes = const [],
+    List<String> refaccionesUsadas = const [],
+    String? fotoEquipoUrl,
+    String? fotoPlacaUrl,
+    String? fotoFallaUrl,
+    String? modelo,
+    String? numeroSerie,
   }) =>
       _col.doc(id).update({
         'estadoAsignacion': EstadoAsignacion.cerrado.name,
@@ -81,7 +87,36 @@ class ServicioRepository {
         'pdfUrl': pdfUrl,
         'motivoPendiente': motivoPendiente,
         'refaccionesFaltantes': refaccionesFaltantes,
+        'refaccionesUsadas': refaccionesUsadas,
+        if (fotoEquipoUrl != null) 'fotoEquipoUrl': fotoEquipoUrl,
+        if (fotoPlacaUrl != null) 'fotoPlacaUrl': fotoPlacaUrl,
+        if (fotoFallaUrl != null) 'fotoFallaUrl': fotoFallaUrl,
+        if (modelo != null && modelo.trim().isNotEmpty) 'modelo': modelo.trim(),
+        if (numeroSerie != null && numeroSerie.trim().isNotEmpty) 'numeroSerie': numeroSerie.trim(),
         'fechaCierre': DateTime.now().toIso8601String(),
+      });
+
+  /// Cuántas veces se completó ANTES un servicio con el mismo número de
+  /// serie (reincidencia del mismo equipo). Un solo filtro de igualdad:
+  /// no requiere índice compuesto.
+  Future<int> contarReincidencias(String numeroSerie, {String? excluirId}) async {
+    if (numeroSerie.trim().isEmpty) return 0;
+    final snap = await _col.where('numeroSerie', isEqualTo: numeroSerie.trim()).get();
+    return snap.docs.where((d) {
+      if (d.id == excluirId) return false;
+      final data = d.data();
+      return data['estadoAsignacion'] == 'cerrado';
+    }).length;
+  }
+
+  /// Reprograma el servicio a una fecha futura y lo regresa a "asignado"
+  /// para que el técnico vuelva a verlo y se le notifique.
+  Future<void> reprogramar(String id, DateTime fecha, {String? technicianId}) =>
+      _col.doc(id).update({
+        'fechaProgramada': fecha.toIso8601String(),
+        'estadoAsignacion': EstadoAsignacion.asignado.name,
+        'estadoFinal': null,
+        if (technicianId != null) 'technicianId': technicianId,
       });
 
   /// Escribe la posición en vivo del técnico mientras va "en camino".

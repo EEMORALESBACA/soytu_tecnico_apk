@@ -73,6 +73,16 @@ class ServicioAsignado {
 
   final String? pdfUrl;
   final String? videoFallaUrl;
+  final String? fotoEquipoUrl;
+  final String? fotoPlacaUrl;
+  final String? fotoFallaUrl;
+  final List<String> refaccionesUsadas;
+  final List<String> refaccionesFaltantes;
+  final String? motivoPendiente;
+  final int refrendos;
+
+  /// Fecha futura programada para atender el servicio (reagendado).
+  final DateTime? fechaProgramada;
 
   const ServicioAsignado({
     required this.id,
@@ -100,6 +110,14 @@ class ServicioAsignado {
     this.fechaCierre,
     this.pdfUrl,
     this.videoFallaUrl,
+    this.fotoEquipoUrl,
+    this.fotoPlacaUrl,
+    this.fotoFallaUrl,
+    this.refaccionesUsadas = const [],
+    this.refaccionesFaltantes = const [],
+    this.motivoPendiente,
+    this.refrendos = 0,
+    this.fechaProgramada,
   });
 
   Map<String, dynamic> toMap() => {
@@ -127,6 +145,14 @@ class ServicioAsignado {
         'fechaCierre': fechaCierre?.toIso8601String(),
         'pdfUrl': pdfUrl,
         'videoFallaUrl': videoFallaUrl,
+        'fotoEquipoUrl': fotoEquipoUrl,
+        'fotoPlacaUrl': fotoPlacaUrl,
+        'fotoFallaUrl': fotoFallaUrl,
+        'refaccionesUsadas': refaccionesUsadas,
+        'refaccionesFaltantes': refaccionesFaltantes,
+        'motivoPendiente': motivoPendiente,
+        'refrendos': refrendos,
+        'fechaProgramada': fechaProgramada?.toIso8601String(),
       };
 
   factory ServicioAsignado.fromMap(String id, Map<String, dynamic> map) {
@@ -160,6 +186,14 @@ class ServicioAsignado {
       fechaCierre: fecha('fechaCierre'),
       pdfUrl: map['pdfUrl'] as String?,
       videoFallaUrl: map['videoFallaUrl'] as String?,
+      fotoEquipoUrl: map['fotoEquipoUrl'] as String?,
+      fotoPlacaUrl: map['fotoPlacaUrl'] as String?,
+      fotoFallaUrl: map['fotoFallaUrl'] as String?,
+      refaccionesUsadas: (map['refaccionesUsadas'] as List?)?.map((e) => e.toString()).toList() ?? const [],
+      refaccionesFaltantes: (map['refaccionesFaltantes'] as List?)?.map((e) => e.toString()).toList() ?? const [],
+      motivoPendiente: map['motivoPendiente'] as String?,
+      refrendos: (map['refrendos'] as num?)?.toInt() ?? 0,
+      fechaProgramada: fecha('fechaProgramada'),
     );
   }
 
@@ -174,6 +208,7 @@ class ServicioAsignado {
     DateTime? fechaCierre,
     String? pdfUrl,
     String? videoFallaUrl,
+    DateTime? fechaProgramada,
   }) {
     return ServicioAsignado(
       id: id,
@@ -201,6 +236,14 @@ class ServicioAsignado {
       fechaCierre: fechaCierre ?? this.fechaCierre,
       pdfUrl: pdfUrl ?? this.pdfUrl,
       videoFallaUrl: videoFallaUrl ?? this.videoFallaUrl,
+      fotoEquipoUrl: fotoEquipoUrl,
+      fotoPlacaUrl: fotoPlacaUrl,
+      fotoFallaUrl: fotoFallaUrl,
+      refaccionesUsadas: refaccionesUsadas,
+      refaccionesFaltantes: refaccionesFaltantes,
+      motivoPendiente: motivoPendiente,
+      refrendos: refrendos,
+      fechaProgramada: fechaProgramada ?? this.fechaProgramada,
     );
   }
 }

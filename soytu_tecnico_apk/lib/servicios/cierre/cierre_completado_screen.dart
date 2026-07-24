@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:soytu_core/soytu_core.dart';
 
 import '../../providers/providers.dart';
+import '../../services/reincidencia_aviso.dart';
 import '../formulario_servicio_screen.dart';
 import 'servicios_home_navigator.dart';
 
@@ -27,12 +28,22 @@ class CierreCompletadoScreen extends ConsumerStatefulWidget {
 class _CierreCompletadoScreenState extends ConsumerState<CierreCompletadoScreen> {
   final _firmaCtrl = SignatureController(penStrokeWidth: 2, penColor: Colors.black);
   final _montoCtrl = TextEditingController();
+  late final _modeloCtrl = TextEditingController(text: widget.servicio.modelo);
+  late final _serieCtrl = TextEditingController(text: widget.servicio.numeroSerie);
+  final _otraRefaccionCtrl = TextEditingController();
+  final Set<String> _refaccionesUsadas = {};
   bool _esDeCargo = false;
   bool _procesando = false;
+
+  List<String> get _refaccionesFinales =>
+      [..._refaccionesUsadas, if (_otraRefaccionCtrl.text.trim().isNotEmpty) _otraRefaccionCtrl.text.trim()];
 
   @override
   void dispose() {
     _firmaCtrl.dispose();
+    _modeloCtrl.dispose();
+    _serieCtrl.dispose();
+    _otraRefaccionCtrl.dispose();
     super.dispose();
   }
 
@@ -45,6 +56,8 @@ class _CierreCompletadoScreenState extends ConsumerState<CierreCompletadoScreen>
     setState(() => _procesando = true);
     try {
       final s = widget.servicio;
+      final modelo = _modeloCtrl.text.trim().isEmpty ? s.modelo : _modeloCtrl.text.trim();
+      final serie = _serieCtrl.text.trim().isEmpty ? s.numeroSerie : _serieCtrl.text.trim();
       final tecnico = ref.read(tecnicoActualProvider).value;
       final firmaBytes = await _firmaCtrl.toPngBytes();
 
@@ -61,9 +74,10 @@ class _CierreCompletadoScreenState extends ConsumerState<CierreCompletadoScreen>
         clienteCorreo: s.clienteCorreo,
         equipoTipo: s.equipoTipo,
         marca: s.marca,
-        modelo: s.modelo,
-        numeroSerie: s.numeroSerie,
+        modelo: modelo,
+        numeroSerie: serie,
         fallaReportada: s.fallaReportada,
+        refaccionesUsadas: _refaccionesFinales,
         descripcionTecnico: widget.datos.descripcionTecnico,
         tiposFalla: widget.datos.tiposFalla.toList(),
         voltajes: widget.datos.voltajes,
@@ -82,10 +96,32 @@ class _CierreCompletadoScreenState extends ConsumerState<CierreCompletadoScreen>
         final videoUrl = await storage.subirVideoFalla(s.id, widget.datos.videoFalla!);
         await ref.read(servicioRepositoryProvider).actualizarVideoFalla(s.id, videoUrl);
       }
+      String? urlEquipo, urlPlaca, urlFalla;
+      if (widget.datos.fotoEquipo != null) {
+        urlEquipo = await storage.subirFotoServicio(s.id, 'equipo.jpg', widget.datos.fotoEquipo!);
+      }
+      if (widget.datos.fotoPlaca != null) {
+        urlPlaca = await storage.subirFotoServicio(s.id, 'placa.jpg', widget.datos.fotoPlaca!);
+      }
+      if (widget.datos.fotoFalla != null) {
+        urlFalla = await storage.subirFotoServicio(s.id, 'falla.jpg', widget.datos.fotoFalla!);
+      }
 
-      await ref
-          .read(servicioRepositoryProvider)
-          .cerrar(s.id, estadoFinal: EstadoServicio.completado, pdfUrl: pdfUrl);
+      final svcRepo = ref.read(servicioRepositoryProvider);
+      await svcRepo.cerrar(
+        s.id,
+        estadoFinal: EstadoServicio.completado,
+        pdfUrl: pdfUrl,
+        refaccionesUsadas: _refaccionesFinales,
+        fotoEquipoUrl: urlEquipo,
+        fotoPlacaUrl: urlPlaca,
+        fotoFallaUrl: urlFalla,
+        modelo: modelo,
+        numeroSerie: serie,
+      );
+
+      // Aviso de reincidencia: mismo número de serie ya reparado antes.
+      final reincidencias = await svcRepo.contarReincidencias(serie, excluirId: s.id);
 
       final dir = await getApplicationDocumentsDirectory();
       final archivo = File('${dir.path}/HojaServicio_${s.folio}.pdf');
@@ -104,7 +140,12 @@ class _CierreCompletadoScreenState extends ConsumerState<CierreCompletadoScreen>
         if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
       }
 
-      if (mounted) volverAlInicioDeServicios(context);
+      if (mounted) {
+        if (reincidencias > 0) {
+          await mostrarAvisoReincidencia(context, reincidencias);
+        }
+        volverAlInicioDeServicios(context);
+      }
     } finally {
       if (mounted) setState(() => _procesando = false);
     }
@@ -119,6 +160,41 @@ class _CierreCompletadoScreenState extends ConsumerState<CierreCompletadoScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            const Text('Confirma o corrige modelo y número de serie',
+                style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _modeloCtrl,
+              decoration: const InputDecoration(labelText: 'Modelo', border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _serieCtrl,
+              decoration: const InputDecoration(labelText: 'Número de serie', border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 18),
+            const Text('Refacciones utilizadas en la reparación',
+                style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: catalogoParaEquipo(widget.servicio.equipoTipo)
+                  .map((r) => FilterChip(
+                        label: Text(r),
+                        selected: _refaccionesUsadas.contains(r),
+                        onSelected: (v) => setState(
+                            () => v ? _refaccionesUsadas.add(r) : _refaccionesUsadas.remove(r)),
+                      ))
+                  .toList(),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _otraRefaccionCtrl,
+              decoration: const InputDecoration(
+                  labelText: 'Otra refacción (si no está en la lista)', border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 18),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: const Text('¿Es un servicio de cargo?'),

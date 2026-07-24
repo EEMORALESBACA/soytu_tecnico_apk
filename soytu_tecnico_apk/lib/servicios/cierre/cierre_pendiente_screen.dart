@@ -152,7 +152,7 @@ class _CierrePendienteScreenState extends ConsumerState<CierrePendienteScreen> {
               Wrap(
                 spacing: 8,
                 runSpacing: 4,
-                children: catalogoRefaccionesTv
+                children: catalogoParaEquipo(widget.servicio.equipoTipo)
                     .map((r) => FilterChip(
                           label: Text(r),
                           selected: _refaccionesSeleccionadas.contains(r),

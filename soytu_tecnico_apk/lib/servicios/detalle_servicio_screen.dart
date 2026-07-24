@@ -9,6 +9,7 @@ import 'package:soytu_core/soytu_core.dart';
 import '../providers/providers.dart';
 import '../services/notificaciones_locales.dart';
 import 'formulario_servicio_screen.dart';
+import 'reagendar_servicio.dart';
 
 const _indigo = Color(0xFF1A237E);
 const _verde = Color(0xFF2E7D32);
@@ -216,13 +217,32 @@ class _DetalleServicioScreenState extends ConsumerState<DetalleServicioScreen> {
                   _dato('Falla reportada', s.fallaReportada),
                 ]),
                 const SizedBox(height: 16),
-                if (s.estadoAsignacion == EstadoAsignacion.asignado)
+                if (s.fechaProgramada != null)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    decoration: BoxDecoration(
+                        color: const Color(0xFFEDEFFA), borderRadius: BorderRadius.circular(10)),
+                    child: Text(
+                        '📅 Programado para: '
+                        '${s.fechaProgramada!.day}/${s.fechaProgramada!.month}/${s.fechaProgramada!.year}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontWeight: FontWeight.w600, color: _indigo)),
+                  ),
+                if (s.estadoAsignacion == EstadoAsignacion.asignado) ...[
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(backgroundColor: _verde, foregroundColor: Colors.white),
                     onPressed: _procesando ? null : () => _aceptar(s.id),
                     icon: const Icon(Icons.check),
                     label: const Text('Aceptar servicio'),
                   ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: _procesando ? null : () => reagendarServicio(context, ref, s),
+                    icon: const Icon(Icons.event_repeat),
+                    label: const Text('Reagendar para otra fecha'),
+                  ),
+                ],
                 if (s.estadoAsignacion == EstadoAsignacion.aceptado) ...[
                   if (s.clienteTelefono != null) ...[
                     const Padding(
