@@ -127,6 +127,23 @@ class HojaServicioPdf {
             pw.SizedBox(height: 12),
           ],
 
+          // ---- Refacciones utilizadas (completado) ----
+          if (orden.estado == EstadoServicio.completado &&
+              orden.refaccionesUsadas.isNotEmpty)
+            _cardColor(
+              'REFACCIONES UTILIZADAS',
+              _verde,
+              [
+                pw.Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: orden.refaccionesUsadas
+                      .map((r) => _chip(r, _verde))
+                      .toList(),
+                ),
+              ],
+            ),
+
           // ---- Refacciones faltantes (pendiente) ----
           if (orden.estado == EstadoServicio.pendiente) ...[
             _cardColor(

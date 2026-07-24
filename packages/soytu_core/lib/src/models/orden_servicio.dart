@@ -80,6 +80,7 @@ class OrdenServicio {
   // Cierre
   final double? montoCobrado; // Solo si el servicio es de cargo
   final List<String> refaccionesFaltantes; // Solo estado pendiente
+  final List<String> refaccionesUsadas; // Solo estado completado
   final String? motivoPendiente; // "Refacción" o "Software"
   final String? motivoCancelacion; // Solo estado cancelado
   final Uint8List? firmaCliente; // PNG de la firma
@@ -109,6 +110,7 @@ class OrdenServicio {
     this.fotoEvidenciaCancelacion,
     this.montoCobrado,
     this.refaccionesFaltantes = const [],
+    this.refaccionesUsadas = const [],
     this.motivoPendiente,
     this.motivoCancelacion,
     this.firmaCliente,
