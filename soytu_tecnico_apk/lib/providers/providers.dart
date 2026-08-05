@@ -6,6 +6,7 @@ final tecnicoRepositoryProvider = Provider((ref) => TecnicoRepository());
 final servicioRepositoryProvider = Provider((ref) => ServicioRepository());
 final storageServiceProvider = Provider((ref) => StorageService());
 final notificationServiceProvider = Provider((ref) => NotificationService());
+final almacenRepositoryProvider = Provider((ref) => AlmacenRepository());
 
 /// Sesión de Firebase Auth (null si no hay usuario logueado).
 final sesionProvider = StreamProvider((ref) => ref.watch(authServiceProvider).cambiosDeSesion);

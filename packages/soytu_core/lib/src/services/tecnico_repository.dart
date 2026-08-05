@@ -54,4 +54,7 @@ class TecnicoRepository {
 
   Future<void> actualizarPlacas(String uid, String placas) =>
       _col.doc(uid).update({'placas': placas});
+
+  Future<void> actualizarSelfie(String uid, String url) =>
+      _col.doc(uid).update({'selfieUrl': url});
 }

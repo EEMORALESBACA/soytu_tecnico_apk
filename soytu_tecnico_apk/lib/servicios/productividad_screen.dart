@@ -19,8 +19,16 @@ final historialServiciosProvider = StreamProvider((ref) {
 });
 
 /// 📊 Productividad: KPIs del técnico + estatus de cada servicio asignado.
-class ProductividadScreen extends ConsumerWidget {
+/// Filtrable por mes: null = todo el histórico.
+class ProductividadScreen extends ConsumerStatefulWidget {
   const ProductividadScreen({super.key});
+
+  @override
+  ConsumerState<ProductividadScreen> createState() => _ProductividadScreenState();
+}
+
+class _ProductividadScreenState extends ConsumerState<ProductividadScreen> {
+  DateTime? _mesSeleccionado; // null = ver todo el histórico
 
   (String, Color) _estado(ServicioAsignado s) {
     if (s.estadoAsignacion == EstadoAsignacion.cerrado) {
@@ -40,8 +48,26 @@ class ProductividadScreen extends ConsumerWidget {
     };
   }
 
+  List<DateTime> _mesesDisponibles(List<ServicioAsignado> lista) {
+    final vistos = <String>{};
+    final meses = <DateTime>[];
+    for (final s in lista) {
+      final m = DateTime(s.fechaCreacion.year, s.fechaCreacion.month);
+      final key = '${m.year}-${m.month}';
+      if (vistos.add(key)) meses.add(m);
+    }
+    meses.sort((a, b) => b.compareTo(a));
+    return meses;
+  }
+
+  static const _nombresMes = [
+    '', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+  ];
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    final ref = this.ref;
     final historial = ref.watch(historialServiciosProvider);
 
     return Scaffold(
@@ -53,7 +79,16 @@ class ProductividadScreen extends ConsumerWidget {
       body: historial.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
-        data: (lista) {
+        data: (listaCompleta) {
+          final mesesDisponibles = _mesesDisponibles(listaCompleta);
+          final lista = _mesSeleccionado == null
+              ? listaCompleta
+              : listaCompleta
+                  .where((s) =>
+                      s.fechaCreacion.year == _mesSeleccionado!.year &&
+                      s.fechaCreacion.month == _mesSeleccionado!.month)
+                  .toList();
+
           final total = lista.length;
           final completados = lista
               .where((s) => s.estadoFinal == EstadoServicio.completado)
@@ -75,6 +110,34 @@ class ProductividadScreen extends ConsumerWidget {
           return ListView(
             padding: const EdgeInsets.all(14),
             children: [
+              // ── Selector de mes ──
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE3E5F0)),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<DateTime?>(
+                    isExpanded: true,
+                    value: _mesSeleccionado,
+                    hint: const Text('🗓️ Ver todo el histórico'),
+                    items: [
+                      const DropdownMenuItem<DateTime?>(
+                        value: null,
+                        child: Text('🗓️ Ver todo el histórico'),
+                      ),
+                      ...mesesDisponibles.map((m) => DropdownMenuItem<DateTime?>(
+                            value: m,
+                            child: Text('${_nombresMes[m.month]} ${m.year}'),
+                          )),
+                    ],
+                    onChanged: (v) => setState(() => _mesSeleccionado = v),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
               // ── KPIs ──
               Row(children: [
                 _kpi('$total', 'TOTALES', _indigo),
@@ -85,7 +148,7 @@ class ProductividadScreen extends ConsumerWidget {
               ]),
               const SizedBox(height: 10),
               Row(children: [
-                _kpi('$activos', 'ACTIVOS', _indigo),
+                _kpi('$activos', 'PENDIENTES', _indigo),
                 const SizedBox(width: 10),
                 _kpi('$refaccion', 'REFACCIÓN', _ambar),
                 const SizedBox(width: 10),
@@ -102,7 +165,7 @@ class ProductividadScreen extends ConsumerWidget {
               if (ordenados.isEmpty)
                 const Padding(
                   padding: EdgeInsets.all(24),
-                  child: Text('Aún no tienes servicios en tu historial.',
+                  child: Text('Sin servicios en este periodo.',
                       textAlign: TextAlign.center,
                       style: TextStyle(color: Color(0xFF4A4F63))),
                 ),

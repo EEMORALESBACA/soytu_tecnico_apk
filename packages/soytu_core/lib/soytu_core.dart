@@ -15,5 +15,6 @@ export 'src/services/servicio_repository.dart';
 export 'src/services/storage_service.dart';
 export 'src/services/notification_service.dart';
 export 'src/services/encuesta_repository.dart';
+export 'src/services/almacen_repository.dart';
 
 export 'src/util/geo.dart';

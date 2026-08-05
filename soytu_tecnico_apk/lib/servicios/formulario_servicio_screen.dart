@@ -25,6 +25,11 @@ class DatosDiagnostico {
   String descripcionTecnico = '';
   final Set<TipoFalla> tiposFalla = {};
   final List<LecturaVoltaje> voltajes = [];
+  // Datos adicionales del equipo (opcionales, se integran al reporte).
+  String antiguedad = '';
+  String capacidad = '';
+  String color = '';
+  String accesorios = '';
 }
 
 class FormularioServicioScreen extends StatefulWidget {
@@ -39,6 +44,10 @@ class FormularioServicioScreen extends StatefulWidget {
 class _FormularioServicioScreenState extends State<FormularioServicioScreen> {
   final _datos = DatosDiagnostico();
   final _descripcionCtrl = TextEditingController();
+  final _antiguedadCtrl = TextEditingController();
+  final _capacidadCtrl = TextEditingController();
+  final _colorCtrl = TextEditingController();
+  final _accesoriosCtrl = TextEditingController();
   final _voltajeHogarCtrl = TextEditingController();
   Uint8List? _fotoVoltajeHogar;
   final _voltajeMain12Ctrl = TextEditingController();
@@ -95,6 +104,19 @@ class _FormularioServicioScreenState extends State<FormularioServicioScreen> {
       return;
     }
     _datos.descripcionTecnico = _descripcionCtrl.text.trim();
+    _datos.antiguedad = _antiguedadCtrl.text.trim();
+    _datos.capacidad = _capacidadCtrl.text.trim();
+    _datos.color = _colorCtrl.text.trim();
+    _datos.accesorios = _accesoriosCtrl.text.trim();
+    final extra = <String>[
+      if (_datos.antiguedad.isNotEmpty) 'Antigüedad: ${_datos.antiguedad}',
+      if (_datos.capacidad.isNotEmpty) 'Capacidad: ${_datos.capacidad}',
+      if (_datos.color.isNotEmpty) 'Color: ${_datos.color}',
+      if (_datos.accesorios.isNotEmpty) 'Accesorios: ${_datos.accesorios}',
+    ];
+    if (extra.isNotEmpty) {
+      _datos.descripcionTecnico = '${_datos.descripcionTecnico}\n\nDatos del equipo:\n${extra.join('\n')}';
+    }
     _construirVoltajes();
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => pantalla(widget.servicio, _datos)));
   }
@@ -123,6 +145,43 @@ class _FormularioServicioScreenState extends State<FormularioServicioScreen> {
               obligatoria: true,
               onCapturada: (b) => setState(() => _datos.fotoPlaca = b),
             ),
+            const SizedBox(height: 16),
+            const Text('Datos adicionales del equipo', style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 6),
+            const Text('Opcional, pero ayuda mucho a diagnosticar reincidencias y a la administración.',
+                style: TextStyle(fontSize: 11.5, color: Color(0xFF6B7080))),
+            const SizedBox(height: 8),
+            Row(children: [
+              Expanded(
+                child: TextField(
+                  controller: _antiguedadCtrl,
+                  decoration: const InputDecoration(labelText: 'Antigüedad aprox.', border: OutlineInputBorder(), isDense: true),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextField(
+                  controller: _capacidadCtrl,
+                  decoration: const InputDecoration(labelText: 'Capacidad (Ej. 18 pies, 15kg)', border: OutlineInputBorder(), isDense: true),
+                ),
+              ),
+            ]),
+            const SizedBox(height: 8),
+            Row(children: [
+              Expanded(
+                child: TextField(
+                  controller: _colorCtrl,
+                  decoration: const InputDecoration(labelText: 'Color', border: OutlineInputBorder(), isDense: true),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextField(
+                  controller: _accesoriosCtrl,
+                  decoration: const InputDecoration(labelText: 'Accesorios (control, manguera...)', border: OutlineInputBorder(), isDense: true),
+                ),
+              ),
+            ]),
             const SizedBox(height: 14),
             const Text('Evidencia de la falla *', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
             const SizedBox(height: 6),
@@ -168,6 +227,8 @@ class _FormularioServicioScreenState extends State<FormularioServicioScreen> {
                       ))
                   .toList(),
             ),
+            const SizedBox(height: 18),
+            _TarjetaRefaccionesSugeridas(marca: widget.servicio.marca, tipoEquipo: widget.servicio.equipoTipo),
             const SizedBox(height: 16),
             const Text('Voltajes', style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
@@ -231,6 +292,50 @@ class _FormularioServicioScreenState extends State<FormularioServicioScreen> {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// Muestra las refacciones del almacén sugeridas para la marca y tipo de
+/// equipo de este servicio — mismo inventario que administra el panel web.
+class _TarjetaRefaccionesSugeridas extends StatelessWidget {
+  const _TarjetaRefaccionesSugeridas({required this.marca, required this.tipoEquipo});
+
+  final String marca;
+  final String tipoEquipo;
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<RefaccionInventario>>(
+      stream: AlmacenRepository().observarSugeridas(marca: marca, tipoEquipo: tipoEquipo),
+      builder: (context, snap) {
+        if (!snap.hasData) return const SizedBox.shrink();
+        final refs = snap.data!;
+        if (refs.isEmpty) return const SizedBox.shrink();
+        return Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(color: const Color(0xFFF7F8FC), borderRadius: BorderRadius.circular(10)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('📦 Refacciones sugeridas para $marca · $tipoEquipo',
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5, color: _indigo)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: refs
+                    .map((r) => Chip(
+                          label: Text('${r.nombre} (${r.stock})', style: const TextStyle(fontSize: 11.5)),
+                          backgroundColor: r.stock > 0 ? const Color(0xFFEDEFFA) : const Color(0xFFFDEDED),
+                          visualDensity: VisualDensity.compact,
+                        ))
+                    .toList(),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

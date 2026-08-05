@@ -5,6 +5,7 @@ import 'package:soytu_core/soytu_core.dart';
 import '../providers/providers.dart';
 import '../services/ubicacion_global.dart';
 import 'detalle_servicio_screen.dart';
+import 'ruta_optima_screen.dart';
 
 const _indigo = Color(0xFF1A237E);
 const _verde = Color(0xFF2E7D32);
@@ -31,6 +32,12 @@ class ListaServiciosScreen extends ConsumerWidget {
         foregroundColor: Colors.white,
         title: const Text('Mis servicios'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.alt_route),
+            tooltip: 'Ruta del día',
+            onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const RutaOptimaScreen())),
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {

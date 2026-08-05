@@ -9,7 +9,6 @@ import 'package:soytu_core/soytu_core.dart';
 import '../providers/providers.dart';
 import '../services/notificaciones_locales.dart';
 import 'formulario_servicio_screen.dart';
-import 'reagendar_servicio.dart';
 
 const _indigo = Color(0xFF1A237E);
 const _verde = Color(0xFF2E7D32);
@@ -235,12 +234,6 @@ class _DetalleServicioScreenState extends ConsumerState<DetalleServicioScreen> {
                     onPressed: _procesando ? null : () => _aceptar(s.id),
                     icon: const Icon(Icons.check),
                     label: const Text('Aceptar servicio'),
-                  ),
-                  const SizedBox(height: 8),
-                  OutlinedButton.icon(
-                    onPressed: _procesando ? null : () => reagendarServicio(context, ref, s),
-                    icon: const Icon(Icons.event_repeat),
-                    label: const Text('Reagendar para otra fecha'),
                   ),
                 ],
                 if (s.estadoAsignacion == EstadoAsignacion.aceptado) ...[

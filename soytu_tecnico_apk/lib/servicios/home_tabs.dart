@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 
 import 'lista_servicios_screen.dart';
 import 'productividad_screen.dart';
+import 'perfil_screen.dart';
 
 const _indigo = Color(0xFF1A237E);
 
-/// Pantalla principal del técnico con dos pestañas:
-/// 🧾 Mis servicios y 📊 Mi productividad.
+/// Pantalla principal del técnico con tres pestañas:
+/// 🧾 Mis servicios, 📊 Mi productividad y 👤 Mi perfil.
 class HomeTabs extends StatefulWidget {
   const HomeTabs({super.key});
 
@@ -25,6 +26,7 @@ class _HomeTabsState extends State<HomeTabs> {
         children: const [
           ListaServiciosScreen(),
           ProductividadScreen(),
+          PerfilScreen(),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -41,6 +43,11 @@ class _HomeTabsState extends State<HomeTabs> {
             icon: Icon(Icons.insights_outlined),
             selectedIcon: Icon(Icons.insights, color: _indigo),
             label: 'Productividad',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person, color: _indigo),
+            label: 'Perfil',
           ),
         ],
       ),
