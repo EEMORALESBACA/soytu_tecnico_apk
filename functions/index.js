@@ -36,6 +36,83 @@ async function enviarWhatsApp(telefono, texto) {
   return r.ok;
 }
 
+function normalizarTelE164(telefonoDestino) {
+  let numero = String(telefonoDestino).replace(/\D/g, "");
+  if (numero.length === 10) numero = "521" + numero; // MX celular
+  return "+" + numero;
+}
+
+/**
+ * enviarSms — escribe un "pendiente" en Firestore (sms_pendientes).
+ * Tu propia app "SOYTU Gateway SMS", corriendo en tu celular dedicado,
+ * está escuchando esa colección en tiempo real y lo manda con tu SIM
+ * (tu plan ilimitado) en cuanto aparece. Cero costo por mensaje, cero
+ * proveedor externo.
+ *
+ * Si además tienes Twilio configurado, una función programada revisa
+ * cada 5 minutos los pendientes que llevan más de 5 min sin enviarse
+ * (celular apagado/sin señal) y los manda por Twilio como respaldo.
+ */
+async function enviarSms(telefonoDestino, texto) {
+  if (!telefonoDestino) return false;
+  const destino = normalizarTelE164(telefonoDestino);
+  await admin.firestore().collection("sms_pendientes").add({
+    telefono: destino,
+    texto,
+    estado: "pendiente",
+    creado: new Date().toISOString(),
+  });
+  return true;
+}
+
+async function enviarSmsPorTwilio(telefonoE164, texto) {
+  const cfgTw = await admin.firestore().doc("config/twilio").get();
+  const sid = cfgTw.get("accountSid");
+  const authToken = cfgTw.get("authToken");
+  const fromNumber = cfgTw.get("fromNumber");
+  if (!sid || !authToken || !fromNumber) return false;
+
+  const params = new URLSearchParams({ To: telefonoE164, From: fromNumber, Body: texto });
+  const auth64Tw = Buffer.from(`${sid}:${authToken}`).toString("base64");
+  const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${auth64Tw}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: params.toString(),
+  });
+  if (!r.ok) console.error("Twilio SMS fallo:", r.status, await r.text());
+  return r.ok;
+}
+
+/**
+ * respaldoSmsPorTwilio — cada 5 minutos, si algún SMS lleva más de 5
+ * min como "pendiente" (tu celular gateway estaba apagado/sin señal),
+ * lo manda por Twilio si lo tienes configurado. Sin Twilio configurado,
+ * esta función no hace nada (no truena).
+ */
+exports.respaldoSmsPorTwilio = onSchedule({ schedule: "every 5 minutes", timeZone: "America/Mexico_City" }, async () => {
+  const db = admin.firestore();
+  const cfgTw = await db.doc("config/twilio").get();
+  if (!cfgTw.get("accountSid")) return; // sin Twilio configurado, no hay respaldo que hacer
+
+  const limite = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+  const snap = await db.collection("sms_pendientes")
+    .where("estado", "==", "pendiente")
+    .where("creado", "<=", limite)
+    .get();
+
+  for (const doc of snap.docs) {
+    const { telefono, texto } = doc.data();
+    const ok = await enviarSmsPorTwilio(telefono, texto);
+    await doc.ref.update({
+      estado: ok ? "enviado_twilio" : "error",
+      enviadoEn: new Date().toISOString(),
+    });
+  }
+});
+
 exports.vigilarServicios = onDocumentWritten("servicios/{id}", async (event) => {
   const antes = event.data.before.exists ? event.data.before.data() : null;
   const ahora = event.data.after.exists ? event.data.after.data() : null;
@@ -70,36 +147,19 @@ exports.vigilarServicios = onDocumentWritten("servicios/{id}", async (event) => 
     }
   }
 
+  // Aviso de "en camino": SMS automático por Twilio (no depende de que
+  // el técnico haga nada, ni de la verificación de negocio de Meta).
   const saleEnCamino = ahora.estadoAsignacion === "enCamino" && (!antes || antes.estadoAsignacion !== "enCamino");
-  if (saleEnCamino) {
-    let tecNombre = "", tecPlacas = "", tecSelfie = null;
+  if (saleEnCamino && ahora.clienteTelefono) {
+    let tecNombre = "";
     if (ahora.technicianId) {
       const tec = await admin.firestore().doc(`tecnicos/${ahora.technicianId}`).get();
-      if (tec.exists) {
-        tecNombre = tec.get("nombre") || "";
-        tecPlacas = tec.get("placas") || "";
-        tecSelfie = tec.get("selfieUrl") || null;
-      }
+      if (tec.exists) tecNombre = tec.get("nombre") || "";
     }
     const texto =
-      `Hola ${ahora.clienteNombre || ""} 👋 Tu técnico SOYTU ya va en camino a tu domicilio por el servicio ${ahora.folio || ""}.\n` +
-      (tecNombre ? `👷 Te atiende: ${tecNombre}\n` : "") +
-      (tecPlacas ? `🚗 Llegará en el vehículo con placas: ${tecPlacas}\n` : "") +
-      `📍 Sigue su ubicación en tiempo real (con su fotografía): ${LIGA_TRACKING(id)}\n— SOYTU · Creando Conexiones`;
-    const cfg = await admin.firestore().doc("config/whatsapp").get();
-    const token = cfg.get("token");
-    const phoneId = cfg.get("phoneNumberId");
-    if (token && phoneId && ahora.clienteTelefono) {
-      const cuerpo = tecSelfie
-        ? { messaging_product: "whatsapp", to: normalizarTel(ahora.clienteTelefono), type: "image", image: { link: tecSelfie, caption: texto } }
-        : { messaging_product: "whatsapp", to: normalizarTel(ahora.clienteTelefono), type: "text", text: { body: texto } };
-      const r = await fetch(`https://graph.facebook.com/v20.0/${phoneId}/messages`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify(cuerpo),
-      });
-      if (!r.ok) console.error("WhatsApp enCamino fallo:", r.status, await r.text());
-    }
+      `Hola ${ahora.clienteNombre || ""}, ${tecNombre ? `su técnico SOYTU (${tecNombre})` : "su técnico SOYTU"} ` +
+      `ya va en camino por el servicio ${ahora.folio || ""}. Sígalo en tiempo real: ${LIGA_TRACKING(id)} — SOYTU`;
+    await enviarSms(ahora.clienteTelefono, texto);
   }
 
   const llego = ahora.estadoAsignacion === "enSitio" && (!antes || antes.estadoAsignacion !== "enSitio");
@@ -276,4 +336,33 @@ exports.webhookConekta = onRequest(async (req, res) => {
     console.error("webhookConekta error:", e);
     res.status(500).send("error");
   }
+});
+
+/**
+ * webhookWhatsApp — endpoint que Meta llama para verificar tu webhook
+ * y para avisarte de eventos (mensajes entrantes, confirmaciones de
+ * entrega). Hoy solo lo necesitas para pasar la verificación de Meta;
+ * si más adelante quieres leer respuestas de clientes, ya queda la base.
+ *
+ * Configúralo en Meta como:
+ *   URL de devolución de llamada: https://us-central1-soytu-tecnico.cloudfunctions.net/webhookWhatsApp
+ *   Token de verificación: 3GbxYV7jw5sBZiHh18u0IK5G4Mg20-9v
+ */
+exports.webhookWhatsApp = onRequest(async (req, res) => {
+  const TOKEN_VERIFICACION = "3GbxYV7jw5sBZiHh18u0IK5G4Mg20-9v";
+
+  if (req.method === "GET") {
+    const modo = req.query["hub.mode"];
+    const token = req.query["hub.verify_token"];
+    const challenge = req.query["hub.challenge"];
+    if (modo === "subscribe" && token === TOKEN_VERIFICACION) {
+      res.status(200).send(challenge);
+    } else {
+      res.status(403).send("Token de verificación incorrecto");
+    }
+    return;
+  }
+
+  console.log("Evento de WhatsApp recibido:", JSON.stringify(req.body).slice(0, 500));
+  res.status(200).send("EVENT_RECEIVED");
 });
