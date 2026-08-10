@@ -207,6 +207,50 @@ async function generarYEnviarAlerta(momento) {
   await enviarWhatsApp(ADMIN_WHATSAPP, texto);
 }
 
+/**
+ * revisarRecertificacionExamenes — corre todos los días. Si el resultado
+ * de un examen de un técnico tiene más de 6 meses (180 días), lo borra
+ * de `examenes` (para que la app se lo vuelva a pedir) y, si el técnico
+ * estaba aprobado, lo regresa a "pendiente" para que el admin lo revise
+ * de nuevo — igual que una alta nueva.
+ */
+exports.revisarRecertificacionExamenes = onSchedule({ schedule: "0 6 * * *", timeZone: "America/Mexico_City" }, async () => {
+  const db = admin.firestore();
+  const limiteMs = 180 * 24 * 60 * 60 * 1000; // 180 días
+  const ahora = Date.now();
+  const snap = await db.collection("tecnicos").get();
+
+  for (const doc of snap.docs) {
+    const t = doc.data();
+    const examenes = t.examenes || {};
+    let vencioAlguno = false;
+    const examenesActualizados = { ...examenes };
+
+    for (const [lineaId, resultado] of Object.entries(examenes)) {
+      const fechaExamen = new Date(resultado.fecha).getTime();
+      if (!fechaExamen) continue;
+      if (ahora - fechaExamen > limiteMs) {
+        delete examenesActualizados[lineaId];
+        vencioAlguno = true;
+      }
+    }
+
+    if (!vencioAlguno) continue;
+
+    const update = { examenes: examenesActualizados };
+    if (t.estadoAprobacion === "aprobado") {
+      update.estadoAprobacion = "pendiente";
+      update.motivoRechazo = "Recertificación semestral requerida: vuelve a presentar tu(s) examen(es) para seguir activo.";
+    }
+    await doc.ref.update(update);
+
+    if (t.telefono) {
+      await enviarSms(t.telefono,
+        `Hola ${t.nombre || ""}, tu certificación SOYTU venció (6 meses). Abre tu app para volver a presentar tu examen y seguir recibiendo servicios. — SOYTU`);
+    }
+  }
+});
+
 exports.alertaDiariaManana = onSchedule({ schedule: "0 9 * * *", timeZone: "America/Mexico_City" }, async () => generarYEnviarAlerta("inicio del día"));
 exports.alertaDiariaTarde = onSchedule({ schedule: "0 19 * * *", timeZone: "America/Mexico_City" }, async () => generarYEnviarAlerta("fin del día"));
 

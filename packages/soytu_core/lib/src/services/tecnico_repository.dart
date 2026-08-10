@@ -63,6 +63,15 @@ class TecnicoRepository {
 
   /// Guarda el resultado de un examen para una línea específica (no
   /// sobreescribe los demás exámenes ya presentados, usa dot-notation).
+  ///
+  /// IMPORTANTE: cada vez que se entrega un examen, el perfil se manda
+  /// de regreso a "pendiente" — sin importar si ya estaba aprobado de
+  /// antes. Así el admin SIEMPRE tiene que revisar la calificación antes
+  /// de dejarlo seguir trabajando (altas nuevas y recertificaciones).
   Future<void> guardarResultadoExamen(String uid, String lineaId, ResultadoExamen resultado) =>
-      _col.doc(uid).update({'examenes.$lineaId': resultado.toMap()});
+      _col.doc(uid).update({
+        'examenes.$lineaId': resultado.toMap(),
+        'estadoAprobacion': EstadoAprobacion.pendiente.name,
+        'motivoRechazo': null,
+      });
 }
