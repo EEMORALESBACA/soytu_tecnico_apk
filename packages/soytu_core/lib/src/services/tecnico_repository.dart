@@ -57,4 +57,12 @@ class TecnicoRepository {
 
   Future<void> actualizarSelfie(String uid, String url) =>
       _col.doc(uid).update({'selfieUrl': url});
+
+  Future<void> guardarLineasNegocio(String uid, List<String> lineas) =>
+      _col.doc(uid).update({'lineasNegocio': lineas});
+
+  /// Guarda el resultado de un examen para una línea específica (no
+  /// sobreescribe los demás exámenes ya presentados, usa dot-notation).
+  Future<void> guardarResultadoExamen(String uid, String lineaId, ResultadoExamen resultado) =>
+      _col.doc(uid).update({'examenes.$lineaId': resultado.toMap()});
 }

@@ -2,7 +2,7 @@ name: soytu_tecnico_apk
 description: "A new Flutter project."
 publish_to: 'none'
 
-version: 1.0.8+9
+version: 1.0.9+10
 
 environment:
   sdk: ^3.12.2
@@ -40,6 +40,9 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/SOYTU.png
+    - assets/examenes/linea_blanca.json
+    - assets/examenes/electronica_tv.json
+    - assets/examenes/refrigeracion_ac.json
 
 flutter_icons:
   android: true

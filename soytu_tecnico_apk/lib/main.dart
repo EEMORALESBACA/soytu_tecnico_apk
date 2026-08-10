@@ -7,6 +7,8 @@ import 'package:soytu_core/soytu_core.dart';
 
 import 'auth/login_screen.dart';
 import 'auth/espera_aprobacion_screen.dart';
+import 'examen/seleccion_lineas_screen.dart';
+import 'examen/examenes_pendientes_screen.dart';
 import 'providers/providers.dart';
 import 'services/notificaciones_locales.dart';
 import 'services/ubicacion_global.dart';
@@ -105,7 +107,21 @@ class _RaizAppState extends ConsumerState<_RaizApp> {
           loading: () => const _Cargando(),
           error: (e, _) => Scaffold(body: Center(child: Text('Error: $e'))),
           data: (t) {
-            if (t == null || t.estadoAprobacion != EstadoAprobacion.aprobado) {
+            if (t == null) return const EsperaAprobacionScreen();
+
+            // Paso 1: si aún no marcó qué líneas de negocio repara, se le pide
+            //    antes que nada — no puede saltarse este paso.
+            if (t.lineasNegocio.isEmpty) {
+              return SeleccionLineasScreen(tecnico: t);
+            }
+            // Paso 2: si ya eligió líneas pero le falta presentar el examen de
+            //    alguna, se queda aquí hasta enviarlos todos.
+            if (!t.examenesCompletos) {
+              return ExamenesPendientesScreen(tecnico: t);
+            }
+            // Paso 3: con líneas y exámenes completos, sigue el flujo normal:
+            //    espera a que el admin revise selfie + INE + calificaciones.
+            if (t.estadoAprobacion != EstadoAprobacion.aprobado) {
               return const EsperaAprobacionScreen();
             }
 

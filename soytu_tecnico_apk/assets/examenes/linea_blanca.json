@@ -1,0 +1,728 @@
+{
+  "examen": "linea_blanca",
+  "titulo": "Certificación SOYTU · Técnico de Línea Blanca",
+  "tiempoMinutos": 50,
+  "instrucciones": "50 minutos para 60 preguntas de opción múltiple. Cada pregunta tiene una sola respuesta correcta.",
+  "preguntas": [
+    {
+      "id": 1,
+      "tema": "Lavadoras",
+      "pregunta": "Una lavadora de carga superior no centrifuga pero sí lava y enjuaga. ¿Cuál es la causa más probable?",
+      "opciones": [
+        "Válvula de entrada de agua dañada",
+        "Escobillas del motor desgastadas o tapa de seguridad (lid switch) defectuosa",
+        "Fuga en la manguera de drenaje",
+        "Filtro de pelusa saturado"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 2,
+      "tema": "Lavadoras",
+      "pregunta": "¿Qué componente detecta si la tapa/puerta está cerrada antes de permitir el centrifugado?",
+      "opciones": [
+        "Presostato",
+        "Switch de tapa (lid switch) o interlock de puerta",
+        "Válvula solenoide",
+        "Termistor"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 3,
+      "tema": "Lavadoras",
+      "pregunta": "El presostato de una lavadora sirve para:",
+      "opciones": [
+        "Medir la temperatura del agua",
+        "Detectar el nivel de agua en la tina",
+        "Controlar la velocidad del motor",
+        "Sensar el peso de la carga"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 4,
+      "tema": "Lavadoras",
+      "pregunta": "Una lavadora de carga frontal presenta código de error de drenaje. ¿Qué revisas primero?",
+      "opciones": [
+        "La tarjeta de control",
+        "La bomba de drenaje y filtro por obstrucciones",
+        "El motor principal",
+        "El dispensador de suavizante"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 5,
+      "tema": "Lavadoras",
+      "pregunta": "¿Qué función tiene el capacitor de arranque en un motor de lavadora tipo inducción?",
+      "opciones": [
+        "Regular el voltaje de entrada",
+        "Dar el torque de arranque inicial al motor",
+        "Filtrar el ruido eléctrico",
+        "Detener el motor de forma segura"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 6,
+      "tema": "Lavadoras",
+      "pregunta": "Una lavadora vibra excesivamente durante el centrifugado. La causa MENOS probable es:",
+      "opciones": [
+        "Amortiguadores/resortes de suspensión desgastados",
+        "Carga desbalanceada",
+        "Patas niveladoras mal ajustadas",
+        "Fuga de refrigerante"
+      ],
+      "respuestaCorrecta": 3
+    },
+    {
+      "id": 7,
+      "tema": "Lavadoras",
+      "pregunta": "¿Qué es el 'bearing' o balero de tina en una lavadora de carga frontal?",
+      "opciones": [
+        "Un sensor de temperatura",
+        "El rodamiento que permite el giro suave de la tina",
+        "Una válvula de entrada",
+        "El motor de la bomba"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 8,
+      "tema": "Lavadoras",
+      "pregunta": "Un balero de tina dañado típicamente se manifiesta como:",
+      "opciones": [
+        "Ruido metálico/rechinido fuerte durante el giro",
+        "Fuga de agua por el panel frontal",
+        "Falla al encender",
+        "Olor a quemado en el motor"
+      ],
+      "respuestaCorrecta": 0
+    },
+    {
+      "id": 9,
+      "tema": "Lavadoras",
+      "pregunta": "¿Cuál es la función de la válvula de entrada de agua (water inlet valve)?",
+      "opciones": [
+        "Drenar el agua sucia",
+        "Permitir el paso de agua fría/caliente controlado eléctricamente",
+        "Mezclar el detergente con el agua",
+        "Sensar el nivel de agua"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 10,
+      "tema": "Lavadoras",
+      "pregunta": "Una lavadora no llena de agua y la válvula de entrada mide correctamente el voltaje de activación pero no abre. ¿Qué se debe hacer?",
+      "opciones": [
+        "Reemplazar la válvula, probablemente la bobina o el diafragma están dañados",
+        "Cambiar el presostato",
+        "Revisar el motor",
+        "Ajustar la presión de la casa"
+      ],
+      "respuestaCorrecta": 0
+    },
+    {
+      "id": 11,
+      "tema": "Lavadoras",
+      "pregunta": "¿Qué mide un multímetro para diagnosticar si una bobina de válvula de agua está dañada (abierta)?",
+      "opciones": [
+        "Voltaje AC en la línea",
+        "Continuidad/resistencia en la bobina",
+        "Corriente de arranque",
+        "Frecuencia"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 12,
+      "tema": "Secadoras",
+      "pregunta": "Una secadora de gas no calienta pero el tambor gira. La primera revisión debe ser:",
+      "opciones": [
+        "El motor del tambor",
+        "El sistema de encendido: bobinas de gas, electrodo de ignición y termostato de operación",
+        "La banda del tambor",
+        "El filtro de pelusa"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 13,
+      "tema": "Secadoras",
+      "pregunta": "¿Qué función tiene el termofusible (thermal fuse) en una secadora?",
+      "opciones": [
+        "Regular la velocidad del motor",
+        "Cortar la energía si la temperatura sube a niveles peligrosos, por seguridad",
+        "Encender la resistencia",
+        "Detectar humedad en la ropa"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 14,
+      "tema": "Secadoras",
+      "pregunta": "Un termofusible quemado casi siempre indica:",
+      "opciones": [
+        "Un motor desgastado",
+        "Restricción en el ducto de ventilación que causa sobrecalentamiento",
+        "Un problema del panel de control",
+        "Una banda rota"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 15,
+      "tema": "Secadoras",
+      "pregunta": "En una secadora eléctrica de 220V, la resistencia calefactora se mide con el multímetro y da lectura de infinito (OL). Esto significa:",
+      "opciones": [
+        "La resistencia está en corto",
+        "La resistencia está abierta/fundida, hay que reemplazarla",
+        "La resistencia funciona correctamente",
+        "Hay que revisar el voltaje de línea"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 16,
+      "tema": "Secadoras",
+      "pregunta": "¿Qué componente detecta la humedad restante para el ciclo de sensor de secado automático?",
+      "opciones": [
+        "Termostato de operación",
+        "Sensor de humedad (moisture sensor), generalmente unas barras metálicas en el tambor",
+        "Presostato",
+        "Termofusible"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 17,
+      "tema": "Lavavajillas",
+      "pregunta": "Un lavavajillas no drena al final del ciclo. ¿Qué se revisa primero?",
+      "opciones": [
+        "La resistencia de secado",
+        "La bomba de drenaje y el filtro/trampa de comida",
+        "El dispensador de jabón",
+        "El sensor de turbidez"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 18,
+      "tema": "Lavavajillas",
+      "pregunta": "¿Cuál es la función del 'aquastop' o sistema anti-fuga en algunos lavavajillas?",
+      "opciones": [
+        "Detener el suministro de agua si detecta fuga en la charola base",
+        "Controlar la temperatura del agua",
+        "Dosificar el detergente",
+        "Filtrar residuos de comida"
+      ],
+      "respuestaCorrecta": 0
+    },
+    {
+      "id": 19,
+      "tema": "Lavavajillas",
+      "pregunta": "Los platos salen con residuo blanco después del lavado. La causa más probable es:",
+      "opciones": [
+        "Agua muy dura sin suficiente sal regeneradora/abrillantador",
+        "Motor de lavado dañado",
+        "Fuga de agua",
+        "Puerta mal cerrada"
+      ],
+      "respuestaCorrecta": 0
+    },
+    {
+      "id": 20,
+      "tema": "Estufas/Hornos",
+      "pregunta": "En una estufa de gas, un quemador prende con dificultad y la flama es amarilla en vez de azul. Esto indica:",
+      "opciones": [
+        "Falta de gas",
+        "Mala combustión, posiblemente obstrucción en el inyector o mezcla incorrecta aire-gas",
+        "Termopar dañado",
+        "Válvula de seguridad activada"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 21,
+      "tema": "Estufas/Hornos",
+      "pregunta": "¿Cuál es la función del termopar en un horno o parrilla de gas con piloto?",
+      "opciones": [
+        "Medir la temperatura del horno para el display",
+        "Generar una pequeña corriente que mantiene abierta la válvula de gas mientras detecta la flama piloto",
+        "Encender la chispa de ignición",
+        "Regular la presión de gas"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 22,
+      "tema": "Estufas/Hornos",
+      "pregunta": "Un horno eléctrico no calienta por la parte de abajo (resistencia inferior) pero sí por arriba. ¿Qué se revisa?",
+      "opciones": [
+        "El fusible principal de toda la casa",
+        "Continuidad de la resistencia inferior y su conexión/relevador",
+        "El termostato del refrigerador",
+        "La válvula de gas"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 23,
+      "tema": "Estufas/Hornos",
+      "pregunta": "En estufas de inducción, el calor se genera por:",
+      "opciones": [
+        "Una resistencia eléctrica visible",
+        "Un campo electromagnético que induce corriente directamente en el recipiente de metal",
+        "Combustión de gas",
+        "Rayos infrarrojos"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 24,
+      "tema": "Estufas/Hornos",
+      "pregunta": "Una estufa de inducción requiere que el recipiente sea:",
+      "opciones": [
+        "De cualquier material",
+        "Ferromagnético (que un imán se le pegue), como acero inoxidable magnético o hierro fundido",
+        "De vidrio templado",
+        "De aluminio puro"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 25,
+      "tema": "Microondas",
+      "pregunta": "¿Cuál es el componente que genera las microondas dentro del horno?",
+      "opciones": [
+        "El transformador de alto voltaje",
+        "El magnetrón",
+        "El capacitor de alto voltaje",
+        "El diodo rectificador"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 26,
+      "tema": "Microondas",
+      "pregunta": "Antes de dar servicio interno a un microondas, ¿qué precaución de seguridad es OBLIGATORIA?",
+      "opciones": [
+        "Ninguna, es seguro abrir de inmediato",
+        "Descargar completamente el capacitor de alto voltaje, ya que puede retener carga letal aunque esté desconectado",
+        "Solo desconectarlo de la corriente",
+        "Usar guantes de tela"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 27,
+      "tema": "Microondas",
+      "pregunta": "Un microondas enciende, el plato gira, pero no calienta. La causa más común es:",
+      "opciones": [
+        "El foco interno fundido",
+        "El magnetrón dañado o el diodo/capacitor de alto voltaje en falla",
+        "El temporizador",
+        "El plato de vidrio está roto"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 28,
+      "tema": "Seguridad eléctrica",
+      "pregunta": "Antes de dar servicio a cualquier electrodoméstico conectado a la corriente, el técnico debe:",
+      "opciones": [
+        "Trabajar con el equipo encendido para ver la falla en vivo",
+        "Desconectar el equipo de la corriente y verificar ausencia de voltaje",
+        "Solo apagar el interruptor de pared",
+        "Cubrir el equipo con un trapo húmedo"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 29,
+      "tema": "Seguridad eléctrica",
+      "pregunta": "¿Qué mide un multímetro en modo de continuidad?",
+      "opciones": [
+        "Voltaje entre dos puntos",
+        "Si existe un circuito cerrado (paso de corriente) entre dos puntos, sin importar la resistencia exacta",
+        "La frecuencia de la corriente",
+        "La potencia consumida"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 30,
+      "tema": "Seguridad eléctrica",
+      "pregunta": "Un electrodoméstico 'pica' (da toque) al tocar su carcasa metálica. La causa más probable es:",
+      "opciones": [
+        "Fuga de corriente a tierra por aislamiento dañado, y falta de conexión a tierra física",
+        "Bajo voltaje de línea",
+        "Motor desgastado",
+        "Filtro sucio"
+      ],
+      "respuestaCorrecta": 0
+    },
+    {
+      "id": 31,
+      "tema": "Seguridad eléctrica",
+      "pregunta": "¿Para qué sirve la clavija de tierra (el tercer pin) en un electrodoméstico?",
+      "opciones": [
+        "Da más potencia al equipo",
+        "Desvía corrientes de fuga a tierra para evitar choques eléctricos al usuario",
+        "Sirve para sujetar mejor el cable",
+        "No tiene función real"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 32,
+      "tema": "Refrigeradores",
+      "pregunta": "Un refrigerador doméstico enfría poco y el compresor trabaja de forma casi continua. Una causa común es:",
+      "opciones": [
+        "Empaques de puerta (burletes) dañados que dejan entrar aire caliente",
+        "El foco interior fundido",
+        "El cable de poder muy largo",
+        "El filtro de agua saturado"
+      ],
+      "respuestaCorrecta": 0
+    },
+    {
+      "id": 33,
+      "tema": "Refrigeradores",
+      "pregunta": "¿Cómo se prueba si un empaque/burlete de puerta sella correctamente?",
+      "opciones": [
+        "A simple vista únicamente",
+        "Con la prueba del billete: se cierra la puerta sobre un billete y se verifica resistencia al jalarlo en todo el perímetro",
+        "Midiendo el voltaje del compresor",
+        "Con un termómetro de infrarrojo"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 34,
+      "tema": "Refrigeradores",
+      "pregunta": "El deshielo automático (defrost) en un refrigerador no cíclico usa un temporizador o control electrónico que activa:",
+      "opciones": [
+        "El compresor con más fuerza",
+        "Una resistencia de deshielo para derretir el hielo acumulado en el evaporador",
+        "La válvula de agua del dispensador",
+        "El motor del condensador"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 35,
+      "tema": "Refrigeradores",
+      "pregunta": "Si el sistema de deshielo falla, el síntoma típico es:",
+      "opciones": [
+        "El refrigerador no enciende",
+        "Acumulación excesiva de hielo/escarcha en el evaporador que bloquea el flujo de aire y reduce el enfriamiento",
+        "Fuga de agua por la puerta",
+        "Ruido en el compresor"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 36,
+      "tema": "Refrigeradores",
+      "pregunta": "¿Qué componente detecta la temperatura y envía la señal para que el compresor arranque o pare?",
+      "opciones": [
+        "El termostato o sensor de temperatura (termistor) conectado a la tarjeta de control",
+        "El presostato",
+        "El capacitor de arranque",
+        "El relevador de sobrecarga"
+      ],
+      "respuestaCorrecta": 0
+    },
+    {
+      "id": 37,
+      "tema": "Diagnóstico general",
+      "pregunta": "Un electrodoméstico no enciende en absoluto (ninguna luz, ningún sonido). El primer paso de diagnóstico es:",
+      "opciones": [
+        "Desarmar el motor",
+        "Verificar que llegue corriente: toma de pared, cable, fusible/breaker del panel de la casa",
+        "Cambiar la tarjeta de control directamente",
+        "Revisar el manual del usuario"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 38,
+      "tema": "Diagnóstico general",
+      "pregunta": "¿Cuál es el orden lógico correcto de diagnóstico ante una falla eléctrica?",
+      "opciones": [
+        "Cambiar piezas al azar hasta que funcione",
+        "De lo más simple/barato y externo a lo más complejo/interno: alimentación, conexiones, componente sospechoso, tarjeta electrónica",
+        "Siempre empezar por la tarjeta de control",
+        "Preguntar al cliente qué pieza cree que está mal"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 39,
+      "tema": "Diagnóstico general",
+      "pregunta": "Un capacitor de arranque de motor hinchado o con fuga de líquido debe:",
+      "opciones": [
+        "Seguir usándose si aún mide bien",
+        "Reemplazarse siempre, es un signo de falla inminente",
+        "Repararse con cinta aislante",
+        "Recargarse con nuevo dieléctrico"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 40,
+      "tema": "Diagnóstico general",
+      "pregunta": "¿Qué instrumento usarías para medir la corriente que consume un motor en operación (amperaje real de trabajo)?",
+      "opciones": [
+        "Multímetro en modo voltaje",
+        "Pinza amperimétrica",
+        "Termómetro de contacto",
+        "Manómetro"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 41,
+      "tema": "Componentes",
+      "pregunta": "¿Qué es un relevador (relay) en un electrodoméstico?",
+      "opciones": [
+        "Un interruptor electromecánico activado eléctricamente que permite controlar cargas grandes con señales pequeñas",
+        "Un tipo de fusible",
+        "Un sensor de temperatura",
+        "Un capacitor de filtro"
+      ],
+      "respuestaCorrecta": 0
+    },
+    {
+      "id": 42,
+      "tema": "Componentes",
+      "pregunta": "Un fusible térmico protege un equipo de:",
+      "opciones": [
+        "Sobrevoltaje",
+        "Sobrecalentamiento excesivo, cortando el circuito antes de un incendio",
+        "Bajo voltaje",
+        "Humedad"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 43,
+      "tema": "Componentes",
+      "pregunta": "¿Qué diferencia hay entre un motor de inducción y un motor universal (con escobillas)?",
+      "opciones": [
+        "No hay diferencia",
+        "El de inducción no usa escobillas y es más silencioso/duradero; el universal usa escobillas de carbón que se desgastan",
+        "El universal siempre es más potente",
+        "El de inducción solo funciona con corriente directa"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 44,
+      "tema": "Componentes",
+      "pregunta": "Las escobillas de carbón desgastadas en un motor universal (ej. licuadora, aspiradora) provocan típicamente:",
+      "opciones": [
+        "Que el motor gire más rápido de lo normal",
+        "Chispeo visible, ruido, pérdida de potencia o que el motor no arranque",
+        "Que el equipo consuma menos energía",
+        "Ningún síntoma detectable"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 45,
+      "tema": "Atención y normas",
+      "pregunta": "Al llegar a un domicilio, ¿cuál es la primera acción profesional recomendada?",
+      "opciones": [
+        "Empezar a desarmar el equipo de inmediato",
+        "Presentarse, confirmar el folio/servicio, y preguntar al cliente los detalles de la falla",
+        "Pedir el pago por adelantado antes de revisar nada",
+        "Tomar fotos del domicilio"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 46,
+      "tema": "Atención y normas",
+      "pregunta": "Según la política SOYTU, ¿qué formas de pago puede recibir el técnico del cliente?",
+      "opciones": [
+        "Efectivo únicamente",
+        "Ninguna: el técnico nunca maneja el cobro directo ni efectivo, el pago se hace por transferencia o tarjeta a través de la plataforma",
+        "Efectivo o tarjeta, cualquiera",
+        "Tarjeta bancaria física del técnico"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 47,
+      "tema": "Atención y normas",
+      "pregunta": "Si el técnico determina que la reparación requiere una refacción que no trae consigo, debe:",
+      "opciones": [
+        "Improvisar con una pieza de otro equipo",
+        "Explicar la situación al cliente, registrar el motivo como pendiente por refacción en la app, y agendar el seguimiento",
+        "Cobrar la visita completa y retirarse sin explicación",
+        "Dejar el equipo desarmado y no volver"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 48,
+      "tema": "Atención y normas",
+      "pregunta": "¿Por qué es importante tomar fotos de la placa de datos (número de serie) del equipo al iniciar el servicio?",
+      "opciones": [
+        "Es un requisito estético",
+        "Permite identificar el modelo exacto, historial y evita confusión en refacciones futuras",
+        "No tiene ninguna utilidad real",
+        "Solo se usa para el PDF"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 49,
+      "tema": "Mantenimiento preventivo",
+      "pregunta": "¿Cada cuánto se recomienda, como buena práctica, limpiar el condensador trasero/inferior de un refrigerador?",
+      "opciones": [
+        "Nunca es necesario",
+        "Cada 6-12 meses aproximadamente, para evitar acumulación de polvo que reduce la eficiencia",
+        "Cada semana",
+        "Solo cuando deja de enfriar por completo"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 50,
+      "tema": "Mantenimiento preventivo",
+      "pregunta": "Recomendar al cliente no sobrecargar la lavadora ayuda a prevenir principalmente:",
+      "opciones": [
+        "Manchas en la ropa",
+        "Desgaste prematuro del motor, la transmisión, baleros y desbalanceo excesivo",
+        "Mal olor en la tina",
+        "Fugas de gas"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 51,
+      "tema": "Lavadoras",
+      "pregunta": "Una lavadora de carga frontal huele mal (moho) de forma recurrente. La recomendación profesional es:",
+      "opciones": [
+        "Cambiar la lavadora completa",
+        "Limpieza periódica del sello de la puerta y ciclo de limpieza con producto especializado, dejar la puerta entreabierta entre usos",
+        "No tiene solución",
+        "Se resuelve solo con el tiempo, sin acción"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 52,
+      "tema": "Secadoras",
+      "pregunta": "Un ducto de ventilación de secadora obstruido o muy largo puede causar, además de tiempos de secado largos:",
+      "opciones": [
+        "Riesgo de incendio por acumulación de pelusa y calor",
+        "Que la ropa salga más limpia",
+        "Ahorro de energía",
+        "Mejor rendimiento del motor"
+      ],
+      "respuestaCorrecta": 0
+    },
+    {
+      "id": 53,
+      "tema": "Componentes",
+      "pregunta": "¿Qué es un termistor (NTC) y para qué se usa comúnmente en línea blanca?",
+      "opciones": [
+        "Un tipo de fusible mecánico",
+        "Un sensor cuya resistencia cambia con la temperatura, usado para medir temperatura en refrigeradores, hornos y lavadoras",
+        "Un capacitor de arranque",
+        "Una válvula de agua"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 54,
+      "tema": "Diagnóstico general",
+      "pregunta": "Al medir un termistor NTC con el multímetro en frío, esperarías una resistencia:",
+      "opciones": [
+        "Muy baja o cero",
+        "Relativamente alta (varios kilo-ohms), que disminuye al calentarse",
+        "Infinita siempre",
+        "Igual en frío y caliente"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 55,
+      "tema": "Estufas/Hornos",
+      "pregunta": "¿Qué es la válvula de seguridad de gas en una estufa moderna?",
+      "opciones": [
+        "Un dispositivo que corta el suministro de gas si no detecta flama encendida",
+        "Un regulador de presión de la línea de gas de la casa",
+        "Un fusible eléctrico",
+        "El botón de encendido"
+      ],
+      "respuestaCorrecta": 0
+    },
+    {
+      "id": 56,
+      "tema": "Lavavajillas",
+      "pregunta": "¿Qué función cumple el ablandador de agua (con sal regeneradora) en un lavavajillas?",
+      "opciones": [
+        "Reducir la dureza del agua para evitar sarro/residuos en platos y componentes internos",
+        "Añadir espuma extra al lavado",
+        "Calentar el agua más rápido",
+        "Filtrar residuos de comida"
+      ],
+      "respuestaCorrecta": 0
+    },
+    {
+      "id": 57,
+      "tema": "Seguridad eléctrica",
+      "pregunta": "Antes de medir voltaje AC en un circuito, el multímetro debe estar configurado en:",
+      "opciones": [
+        "Modo de resistencia (ohms)",
+        "Modo de voltaje AC (VAC), en el rango adecuado",
+        "Modo de continuidad",
+        "Modo de corriente DC"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 58,
+      "tema": "Diagnóstico general",
+      "pregunta": "Un técnico mide 0V en la salida de una tarjeta de control hacia un componente, pero el voltaje de entrada a la tarjeta es correcto. Esto sugiere:",
+      "opciones": [
+        "El problema es de la línea eléctrica de la casa",
+        "Posible falla en la propia tarjeta de control (triac, relevador o pista dañada)",
+        "El componente de salida está perfecto",
+        "Hay que revisar el cable de poder"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 59,
+      "tema": "Atención y normas",
+      "pregunta": "Si durante el diagnóstico el técnico encuentra un daño previo no relacionado con la falla reportada (ej. un golpe), debe:",
+      "opciones": [
+        "Ignorarlo por completo",
+        "Documentarlo con foto y notificarlo tanto al cliente como en el reporte, antes de iniciar cualquier reparación",
+        "Repararlo sin avisar y cobrarlo aparte sin explicación",
+        "Culpar al cliente directamente"
+      ],
+      "respuestaCorrecta": 1
+    },
+    {
+      "id": 60,
+      "tema": "Componentes",
+      "pregunta": "¿Qué es una tarjeta de control (PCB) en un electrodoméstico moderno?",
+      "opciones": [
+        "Un simple cable de conexión",
+        "El circuito electrónico que recibe señales de sensores/controles y decide cómo operar motores, válvulas y resistencias",
+        "Un tipo de fusible",
+        "El motor principal"
+      ],
+      "respuestaCorrecta": 1
+    }
+  ]
+}
