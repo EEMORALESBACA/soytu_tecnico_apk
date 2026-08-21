@@ -1,0 +1,29 @@
+name: Deploy Funciones SOYTU
+
+"on":
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - 'functions/**'
+      - 'firebase.json'
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Dependencias
+        run: cd functions && npm install
+
+      - name: Desplegar funciones (con token de Firebase CLI generado en Termux)
+        run: npx firebase-tools deploy --only functions --project soytu-tecnico --token "${{ secrets.FIREBASE_TOKEN }}" --non-interactive --force
