@@ -40,6 +40,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/SOYTU.png
+    - assets/images/icono_tecnico.png
     - assets/examenes/linea_blanca.json
     - assets/examenes/electronica_tv.json
     - assets/examenes/refrigeracion_ac.json
@@ -47,7 +48,7 @@ flutter:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/images/SOYTU.png"
+  image_path: "assets/images/icono_tecnico.png"
   adaptive_icon_background: "#1A237E"
-  adaptive_icon_foreground: "assets/images/SOYTU.png"
+  adaptive_icon_foreground: "assets/images/icono_tecnico.png"
   remove_alpha_ios: true
