@@ -27,13 +27,24 @@ class CierreCompletadoScreen extends ConsumerStatefulWidget {
 
 class _CierreCompletadoScreenState extends ConsumerState<CierreCompletadoScreen> {
   final _firmaCtrl = SignatureController(penStrokeWidth: 2, penColor: Colors.black);
-  final _montoCtrl = TextEditingController();
   late final _modeloCtrl = TextEditingController(text: widget.servicio.modelo);
   late final _serieCtrl = TextEditingController(text: widget.servicio.numeroSerie);
   final _otraRefaccionCtrl = TextEditingController();
   final Set<String> _refaccionesUsadas = {};
-  bool _esDeCargo = false;
   bool _procesando = false;
+
+  String _etiquetaMetodoPago(String? m) {
+    switch (m) {
+      case 'tarjeta':
+        return 'Tarjeta';
+      case 'transferencia':
+        return 'Transferencia';
+      case 'efectivo':
+        return 'Efectivo';
+      default:
+        return 'Sin especificar';
+    }
+  }
 
   List<String> get _refaccionesFinales =>
       [..._refaccionesUsadas, if (_otraRefaccionCtrl.text.trim().isNotEmpty) _otraRefaccionCtrl.text.trim()];
@@ -84,7 +95,7 @@ class _CierreCompletadoScreenState extends ConsumerState<CierreCompletadoScreen>
         fotoEquipo: widget.datos.fotoEquipo,
         fotoPlaca: widget.datos.fotoPlaca,
         fotoFalla: widget.datos.fotoFalla,
-        montoCobrado: _esDeCargo ? double.tryParse(_montoCtrl.text.trim()) : null,
+        montoCobrado: widget.datos.montoCobrado,
         firmaCliente: firmaBytes,
       );
 
@@ -106,6 +117,10 @@ class _CierreCompletadoScreenState extends ConsumerState<CierreCompletadoScreen>
       if (widget.datos.fotoFalla != null) {
         urlFalla = await storage.subirFotoServicio(s.id, 'falla.jpg', widget.datos.fotoFalla!);
       }
+      String? urlTicket;
+      if (widget.datos.fotoTicketCompra != null) {
+        urlTicket = await storage.subirFotoServicio(s.id, 'ticket_compra.jpg', widget.datos.fotoTicketCompra!);
+      }
 
       final svcRepo = ref.read(servicioRepositoryProvider);
       await svcRepo.cerrar(
@@ -116,6 +131,9 @@ class _CierreCompletadoScreenState extends ConsumerState<CierreCompletadoScreen>
         fotoEquipoUrl: urlEquipo,
         fotoPlacaUrl: urlPlaca,
         fotoFallaUrl: urlFalla,
+        fotoTicketCompraUrl: urlTicket,
+        montoCobrado: widget.datos.montoCobrado,
+        metodoPago: widget.datos.metodoPago,
         modelo: modelo,
         numeroSerie: serie,
       );
@@ -195,17 +213,20 @@ class _CierreCompletadoScreenState extends ConsumerState<CierreCompletadoScreen>
                   labelText: 'Otra refacción (si no está en la lista)', border: OutlineInputBorder()),
             ),
             const SizedBox(height: 18),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('¿Es un servicio de cargo?'),
-              value: _esDeCargo,
-              onChanged: (v) => setState(() => _esDeCargo = v),
-            ),
-            if (_esDeCargo)
-              TextField(
-                controller: _montoCtrl,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(labelText: 'Monto cobrado (MXN)', border: OutlineInputBorder()),
+            if (widget.servicio.tipoServicio == 'cargo')
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: const Color(0xFFEDEFFA), borderRadius: BorderRadius.circular(10)),
+                child: Row(children: [
+                  const Icon(Icons.payments_outlined, color: Color(0xFF1A237E)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                        'Cobro: \$${widget.datos.montoCobrado?.toStringAsFixed(2) ?? '0.00'} · '
+                        '${_etiquetaMetodoPago(widget.datos.metodoPago)}',
+                        style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF1A237E))),
+                  ),
+                ]),
               ),
             const SizedBox(height: 20),
             const Text('Firma de conformidad del cliente', style: TextStyle(fontWeight: FontWeight.w600)),

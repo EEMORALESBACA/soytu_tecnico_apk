@@ -8,7 +8,7 @@ import 'package:soytu_core/soytu_core.dart';
 
 import '../providers/providers.dart';
 import '../services/notificaciones_locales.dart';
-import 'formulario_servicio_screen.dart';
+import 'verificacion_qr_screen.dart';
 
 const _indigo = Color(0xFF1A237E);
 const _verde = Color(0xFF2E7D32);
@@ -293,7 +293,7 @@ class _DetalleServicioScreenState extends ConsumerState<DetalleServicioScreen> {
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(backgroundColor: _amarillo, foregroundColor: Colors.black),
                     onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => FormularioServicioScreen(servicio: s))),
+                        MaterialPageRoute(builder: (_) => VerificacionQrScreen(servicio: s))),
                     icon: const Icon(Icons.assignment_turned_in),
                     label: const Text('Iniciar servicio'),
                   ),

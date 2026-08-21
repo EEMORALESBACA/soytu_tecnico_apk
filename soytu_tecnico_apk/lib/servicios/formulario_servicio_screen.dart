@@ -22,6 +22,7 @@ class DatosDiagnostico {
   Uint8List? fotoPlaca;
   Uint8List? fotoFalla;
   Uint8List? videoFalla;
+  Uint8List? fotoTicketCompra; // Obligatoria solo si tipoServicio == 'garantia'
   String descripcionTecnico = '';
   final Set<TipoFalla> tiposFalla = {};
   final List<LecturaVoltaje> voltajes = [];
@@ -30,6 +31,9 @@ class DatosDiagnostico {
   String capacidad = '';
   String color = '';
   String accesorios = '';
+  // Solo se llenan cuando el servicio es de cargo (formulario simplificado).
+  double? montoCobrado;
+  String? metodoPago; // 'tarjeta' | 'transferencia' | 'efectivo'
 }
 
 class FormularioServicioScreen extends StatefulWidget {
@@ -53,6 +57,26 @@ class _FormularioServicioScreenState extends State<FormularioServicioScreen> {
   final _voltajeMain12Ctrl = TextEditingController();
   final _voltajeStandbyCtrl = TextEditingController();
   bool _grabandoVideo = false;
+
+  // ── Flujo simplificado de CARGO ──
+  final _montoCargoCtrl = TextEditingController();
+  String? _metodoPagoCargo; // 'tarjeta' | 'transferencia' | 'efectivo'
+
+  bool get _esCargo => widget.servicio.tipoServicio == 'cargo';
+
+  @override
+  void dispose() {
+    _descripcionCtrl.dispose();
+    _antiguedadCtrl.dispose();
+    _capacidadCtrl.dispose();
+    _colorCtrl.dispose();
+    _accesoriosCtrl.dispose();
+    _voltajeHogarCtrl.dispose();
+    _voltajeMain12Ctrl.dispose();
+    _voltajeStandbyCtrl.dispose();
+    _montoCargoCtrl.dispose();
+    super.dispose();
+  }
 
   bool get _tarjetaMainMarcada => _datos.tiposFalla.contains(TipoFalla.tarjetaMain);
 
@@ -90,17 +114,31 @@ class _FormularioServicioScreenState extends State<FormularioServicioScreen> {
     }
   }
 
-  bool get _puedeCerrar =>
-      _datos.fotoEquipo != null &&
-      _datos.fotoPlaca != null &&
-      (_datos.fotoFalla != null || _datos.videoFalla != null) &&
-      _descripcionCtrl.text.trim().isNotEmpty &&
-      _voltajeHogarCtrl.text.trim().isNotEmpty;
+  bool get _puedeCerrar {
+    if (_esCargo) {
+      final monto = double.tryParse(_montoCargoCtrl.text.trim());
+      return monto != null && monto > 0 && _metodoPagoCargo != null;
+    }
+    return _datos.fotoEquipo != null &&
+        _datos.fotoPlaca != null &&
+        (_datos.fotoFalla != null || _datos.videoFalla != null) &&
+        _datos.fotoTicketCompra != null &&
+        _descripcionCtrl.text.trim().isNotEmpty &&
+        _voltajeHogarCtrl.text.trim().isNotEmpty;
+  }
 
   void _irACierre(Widget Function(ServicioAsignado, DatosDiagnostico) pantalla) {
     if (!_puedeCerrar) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Completa fotos de equipo/placa/falla, descripción y voltaje de línea antes de cerrar.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(_esCargo
+              ? 'Captura el monto a cobrar y la forma de pago antes de continuar.'
+              : 'Completa fotos de equipo/placa/falla/ticket de compra, descripción y voltaje de línea antes de cerrar.')));
+      return;
+    }
+    if (_esCargo) {
+      _datos.montoCobrado = double.parse(_montoCargoCtrl.text.trim());
+      _datos.metodoPago = _metodoPagoCargo;
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => pantalla(widget.servicio, _datos)));
       return;
     }
     _datos.descripcionTecnico = _descripcionCtrl.text.trim();
@@ -131,7 +169,94 @@ class _FormularioServicioScreenState extends State<FormularioServicioScreen> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Column(
+        child: _esCargo ? _buildCargo(context) : _buildGarantia(context),
+      ),
+    );
+  }
+
+  /// Servicio de CARGO: sin diagnóstico, directo a cobrar. El cliente ya
+  /// sabe que es un servicio de paga, así que no se le vuelve a preguntar
+  /// nada del equipo — solo el monto y cómo va a pagar.
+  Widget _buildCargo(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(color: const Color(0xFFEDEFFA), borderRadius: BorderRadius.circular(10)),
+          child: const Row(children: [
+            Icon(Icons.payments_outlined, color: _indigo),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text('Servicio de cargo — captura el cobro para cerrar.',
+                  style: TextStyle(color: _indigo, fontWeight: FontWeight.w600, fontSize: 13)),
+            ),
+          ]),
+        ),
+        const SizedBox(height: 18),
+        TextField(
+          controller: _montoCargoCtrl,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: const InputDecoration(
+            labelText: 'Monto a cobrar (MXN) *',
+            prefixText: '\$ ',
+            border: OutlineInputBorder(),
+          ),
+          onChanged: (_) => setState(() {}),
+        ),
+        const SizedBox(height: 18),
+        const Text('Forma de pago *', style: TextStyle(fontWeight: FontWeight.w600)),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _chipPago('tarjeta', 'Tarjeta', Icons.credit_card),
+            _chipPago('transferencia', 'Transferencia', Icons.swap_horiz),
+            _chipPago('efectivo', 'Efectivo', Icons.payments),
+          ],
+        ),
+        const SizedBox(height: 28),
+        const Divider(),
+        const SizedBox(height: 8),
+        const Text('Cerrar servicio', style: TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 10),
+        ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(backgroundColor: _verde, foregroundColor: Colors.white),
+          onPressed: () => _irACierre((s, d) => CierreCompletadoScreen(servicio: s, datos: d)),
+          icon: const Icon(Icons.check_circle_outline),
+          label: const Text('Cobrar y cerrar'),
+        ),
+        const SizedBox(height: 8),
+        ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(backgroundColor: _rojo, foregroundColor: Colors.white),
+          onPressed: () => _irACierre((s, d) => CierreCanceladoScreen(servicio: s, datos: d)),
+          icon: const Icon(Icons.cancel_outlined),
+          label: const Text('Cancelado / Rechazado'),
+        ),
+      ],
+    );
+  }
+
+  Widget _chipPago(String valor, String etiqueta, IconData icono) {
+    final seleccionado = _metodoPagoCargo == valor;
+    return ChoiceChip(
+      label: Row(mainAxisSize: MainAxisSize.min, children: [
+        Icon(icono, size: 16, color: seleccionado ? Colors.white : _indigo),
+        const SizedBox(width: 6),
+        Text(etiqueta),
+      ]),
+      selected: seleccionado,
+      selectedColor: _indigo,
+      labelStyle: TextStyle(color: seleccionado ? Colors.white : _indigo, fontWeight: FontWeight.w600),
+      onSelected: (_) => setState(() => _metodoPagoCargo = valor),
+    );
+  }
+
+  /// Servicio de GARANTÍA: diagnóstico completo, incluyendo evidencia
+  /// fotográfica del ticket de compra que ampara la garantía.
+  Widget _buildGarantia(BuildContext context) {
+    return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             CapturaCamara(
@@ -144,6 +269,12 @@ class _FormularioServicioScreenState extends State<FormularioServicioScreen> {
               etiqueta: 'Foto de la placa / no. de serie',
               obligatoria: true,
               onCapturada: (b) => setState(() => _datos.fotoPlaca = b),
+            ),
+            const SizedBox(height: 14),
+            CapturaCamara(
+              etiqueta: 'Foto del ticket / factura de compra',
+              obligatoria: true,
+              onCapturada: (b) => setState(() => _datos.fotoTicketCompra = b),
             ),
             const SizedBox(height: 16),
             const Text('Datos adicionales del equipo', style: TextStyle(fontWeight: FontWeight.w600)),
@@ -266,8 +397,6 @@ class _FormularioServicioScreenState extends State<FormularioServicioScreen> {
               label: const Text('Cancelado / Rechazado'),
             ),
           ],
-        ),
-      ),
     );
   }
 
