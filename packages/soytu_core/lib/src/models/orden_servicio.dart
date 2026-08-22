@@ -79,6 +79,8 @@ class OrdenServicio {
 
   // Cierre
   final double? montoCobrado; // Solo si el servicio es de cargo
+  final bool esDeCargo; // true = servicio de cargo (aplica garantía SOYTU de 90 días)
+  final String? metodoPago; // 'tarjeta' | 'transferencia' | 'efectivo'
   final List<String> refaccionesFaltantes; // Solo estado pendiente
   final List<String> refaccionesUsadas; // Solo estado completado
   final String? motivoPendiente; // "Refacción" o "Software"
@@ -109,6 +111,8 @@ class OrdenServicio {
     this.fotoFalla,
     this.fotoEvidenciaCancelacion,
     this.montoCobrado,
+    this.esDeCargo = false,
+    this.metodoPago,
     this.refaccionesFaltantes = const [],
     this.refaccionesUsadas = const [],
     this.motivoPendiente,

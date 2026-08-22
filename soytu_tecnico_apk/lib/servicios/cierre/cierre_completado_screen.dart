@@ -96,6 +96,8 @@ class _CierreCompletadoScreenState extends ConsumerState<CierreCompletadoScreen>
         fotoPlaca: widget.datos.fotoPlaca,
         fotoFalla: widget.datos.fotoFalla,
         montoCobrado: widget.datos.montoCobrado,
+        esDeCargo: widget.servicio.tipoServicio == 'cargo',
+        metodoPago: widget.datos.metodoPago,
         firmaCliente: firmaBytes,
       );
 

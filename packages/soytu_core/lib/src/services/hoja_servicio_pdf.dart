@@ -179,6 +179,54 @@ class HojaServicioPdf {
             pw.SizedBox(height: 12),
           ],
 
+          // ---- Términos, condiciones y garantía SOYTU ----
+          _cardColor(
+            'TÉRMINOS, CONDICIONES Y GARANTÍA DEL SERVICIO',
+            _indigo,
+            [
+              if (orden.esDeCargo && orden.estado == EstadoServicio.completado)
+                pw.Container(
+                  margin: const pw.EdgeInsets.only(bottom: 8),
+                  padding: const pw.EdgeInsets.all(8),
+                  decoration: pw.BoxDecoration(
+                    color: PdfColor(_verde.red, _verde.green, _verde.blue, 0.08),
+                    border: pw.Border.all(color: _verde, width: 0.7),
+                    borderRadius: pw.BorderRadius.circular(6),
+                  ),
+                  child: pw.Row(children: [
+                    pw.Text('🛡️  ', style: const pw.TextStyle(fontSize: 11)),
+                    pw.Expanded(
+                      child: pw.Text(
+                        'Este servicio de cargo cuenta con 90 días de garantía SOYTU sobre la '
+                        'mano de obra y las refacciones instaladas, a partir de la fecha de '
+                        'esta hoja de servicio. La garantía no cubre daños por mal uso, '
+                        'variaciones de voltaje ajenas al equipo, ni fallas no relacionadas '
+                        'con el trabajo realizado.',
+                        style: pw.TextStyle(fontSize: 8.5, color: _verde, font: semi),
+                      ),
+                    ),
+                  ]),
+                ),
+              pw.Text(
+                'Al firmar de conformidad, el cliente confirma que el servicio descrito en '
+                'esta hoja fue realizado a su satisfacción y que el técnico se identificó '
+                'correctamente antes de iniciar. Cualquier aclaración sobre el diagnóstico, '
+                'el cobro o la garantía debe reportarse directamente a SOYTU dentro de las '
+                'siguientes 24 horas al teléfono de contacto que aparece abajo — no con el '
+                'técnico directamente.',
+                style: const pw.TextStyle(fontSize: 7.8, lineSpacing: 1.6),
+              ),
+              pw.SizedBox(height: 6),
+              pw.Text(
+                'SOYTU no se hace responsable por fallas preexistentes no reportadas por el '
+                'cliente al momento del servicio, ni por daños derivados de instalaciones '
+                'eléctricas ajenas a la Norma Oficial Mexicana correspondiente.',
+                style: pw.TextStyle(fontSize: 7.8, lineSpacing: 1.6, color: _grisTexto),
+              ),
+            ],
+          ),
+          pw.SizedBox(height: 12),
+
           // ---- Evidencia fotográfica ----
           _card('EVIDENCIA FOTOGRÁFICA', [
             pw.Text(
@@ -368,7 +416,7 @@ class HojaServicioPdf {
         decoration: const pw.BoxDecoration(
             border: pw.Border(top: pw.BorderSide(color: _grisLinea))),
         child: pw.Row(children: [
-          pw.Text('soytu.com.mx  ·  Estado de México / CDMX',
+          pw.Text('soytu.com.mx  ·  Estado de México / CDMX  ·  Contacto: 56 5359 6451',
               style: const pw.TextStyle(fontSize: 7, color: _grisTexto)),
           pw.Spacer(),
           pw.Text('Folio ${o.folio}  ·  Página ${ctx.pageNumber} de ${ctx.pagesCount}',

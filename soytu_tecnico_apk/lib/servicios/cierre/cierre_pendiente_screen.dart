@@ -77,6 +77,7 @@ class _CierrePendienteScreenState extends ConsumerState<CierrePendienteScreen> {
         fotoPlaca: widget.datos.fotoPlaca,
         fotoFalla: widget.datos.fotoFalla,
         motivoPendiente: _motivo,
+        esDeCargo: s.tipoServicio == 'cargo',
         refaccionesFaltantes: _motivo == 'Refacción' ? _refaccionesFinales : const [],
       );
 

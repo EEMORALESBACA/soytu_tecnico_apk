@@ -64,6 +64,7 @@ class _CierreCanceladoScreenState extends ConsumerState<CierreCanceladoScreen> {
         fotoPlaca: widget.datos.fotoPlaca,
         fotoFalla: widget.datos.fotoFalla,
         fotoEvidenciaCancelacion: _fotoEvidencia,
+        esDeCargo: s.tipoServicio == 'cargo',
         motivoCancelacion: _motivoCtrl.text.trim(),
       );
 
