@@ -8,7 +8,7 @@ admin.initializeApp();
 setGlobalOptions({ region: "us-central1", maxInstances: 5 });
 
 const LIGA_TRACKING = (id) => `https://soytu.com.mx/soytu/tracking.html?id=${id}`;
-const ADMIN_WHATSAPP = "2201600812";
+const ADMIN_WHATSAPP = "5653596451";
 const TEMA_ADMINS = "admins_alertas";
 
 function normalizarTelE164(telefonoDestino) {
@@ -17,20 +17,19 @@ function normalizarTelE164(telefonoDestino) {
   return "+" + numero;
 }
 
-async function enviarWhatsApp(telefono, texto) {
+async function enviarWhatsApp(telefono, texto, mediaUrl) {
   const cfg = await admin.firestore().doc("config/whatsapp").get();
   const token = cfg.get("token");
   const phoneId = cfg.get("phoneNumberId");
   if (!token || !phoneId || !telefono) return false;
+  const destino = normalizarTelE164(telefono).replace("+", "");
+  const cuerpo = mediaUrl
+    ? { messaging_product: "whatsapp", to: destino, type: "document", document: { link: mediaUrl, caption: texto, filename: "SOYTU_Hoja_de_Servicio.pdf" } }
+    : { messaging_product: "whatsapp", to: destino, type: "text", text: { body: texto } };
   const r = await fetch(`https://graph.facebook.com/v20.0/${phoneId}/messages`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      messaging_product: "whatsapp",
-      to: normalizarTelE164(telefono).replace("+", ""),
-      type: "text",
-      text: { body: texto },
-    }),
+    body: JSON.stringify(cuerpo),
   });
   if (!r.ok) console.error("WhatsApp fallo:", r.status, await r.text());
   return r.ok;
@@ -38,9 +37,9 @@ async function enviarWhatsApp(telefono, texto) {
 
 /**
  * enviarSms — escribe un "pendiente" en Firestore (sms_pendientes).
- * Tu app "SOYTU Gateway SMS", corriendo en tu celular dedicado, lo manda
- * con tu SIM en cuanto aparece. Si tarda más de 5 min, un respaldo por
- * Twilio (si está configurado) lo intenta mandar por su cuenta.
+ * Tu app "SOYTU Gateway SMS", corriendo en tu celular dedicado (56 5359 6451),
+ * lo manda con tu SIM en cuanto aparece. Si tarda más de 5 min, un respaldo
+ * por Twilio (si está configurado) lo intenta mandar por su cuenta.
  */
 async function enviarSms(telefonoDestino, texto) {
   if (!telefonoDestino) return false;
@@ -76,10 +75,7 @@ async function enviarSmsPorTwilio(telefonoE164, texto) {
 }
 
 /**
- * notificarAdmins — manda un push FCM al tema `admins_alertas`. Cualquier
- * celular con la app SOYTU Admin instalada y sesión de admin válida está
- * suscrito a este tema y recibe la misma alerta, sin importar cuántos
- * administradores tengas.
+ * notificarAdmins — manda un push FCM al tema `admins_alertas`.
  */
 async function notificarAdmins({ titulo, cuerpo, tipo, extra = {} }) {
   try {
@@ -98,7 +94,7 @@ async function notificarAdmins({ titulo, cuerpo, tipo, extra = {} }) {
 }
 
 // ════════════════════════════════════════════════════════════
-// SERVICIOS: alertas de WhatsApp al cliente + push FCM al técnico
+// SERVICIOS: en camino (con liga de rastreo) + cierre (con PDF)
 // ════════════════════════════════════════════════════════════
 exports.vigilarServicios = onDocumentWritten("servicios/{id}", async (event) => {
   const antes = event.data.before.exists ? event.data.before.data() : null;
@@ -106,7 +102,7 @@ exports.vigilarServicios = onDocumentWritten("servicios/{id}", async (event) => 
   if (!ahora) return;
   const id = event.params.id;
 
-  // ── Aviso al ADMIN: servicio nuevo (documento recién creado) ──
+  // ── Aviso al ADMIN: servicio nuevo ──
   if (!antes) {
     await notificarAdmins({
       titulo: "🧾 Nuevo servicio SOYTU",
@@ -144,11 +140,7 @@ exports.vigilarServicios = onDocumentWritten("servicios/{id}", async (event) => 
     }
   }
 
-  // Aviso de "en camino": SMS automático por el Gateway (celular dedicado).
-  // Aviso de "en camino" al cliente — con la liga para rastrear a su
-  // técnico en tiempo real. Intenta primero por WhatsApp (mensaje rico,
-  // con foto y placas del técnico); si WhatsApp no está configurado
-  // todavía, cae automáticamente a SMS (gateway del celular / Twilio).
+  // ── "En camino": liga de rastreo en tiempo real, con foto y placas ──
   const saleEnCamino = ahora.estadoAsignacion === "enCamino" && (!antes || antes.estadoAsignacion !== "enCamino");
   if (saleEnCamino && ahora.clienteTelefono) {
     let tecNombre = "", tecPlacas = "", tecSelfie = null;
@@ -164,7 +156,7 @@ exports.vigilarServicios = onDocumentWritten("servicios/{id}", async (event) => 
       `Hola ${ahora.clienteNombre || ""} 👋 Tu técnico SOYTU ya va en camino a tu domicilio por el servicio ${ahora.folio || ""}.\n` +
       (tecNombre ? `👷 Te atiende: ${tecNombre}\n` : "") +
       (tecPlacas ? `🚗 Llegará en el vehículo con placas: ${tecPlacas}\n` : "") +
-      `📍 Sigue su ubicación en tiempo real (con su fotografía): ${LIGA_TRACKING(id)}\n— SOYTU · Creando Conexiones`;
+      `📍 Sigue su ubicación en tiempo real (con su fotografía): ${LIGA_TRACKING(id)}\n— SOYTU · Creando Conexiones · 56 5359 6451`;
 
     const cfgWa = await admin.firestore().doc("config/whatsapp").get();
     const waToken = cfgWa.get("token");
@@ -184,11 +176,31 @@ exports.vigilarServicios = onDocumentWritten("servicios/{id}", async (event) => 
         await enviarSms(ahora.clienteTelefono, textoBase);
       }
     } else {
-      // WhatsApp no configurado todavía: SMS directo, sin bloquear el aviso.
       const textoSms =
         `Hola ${ahora.clienteNombre || ""}, ${tecNombre ? `su técnico SOYTU (${tecNombre})` : "su técnico SOYTU"} ` +
-        `ya va en camino por el servicio ${ahora.folio || ""}. Sígalo en tiempo real: ${LIGA_TRACKING(id)} — SOYTU`;
+        `ya va en camino por el servicio ${ahora.folio || ""}. Sígalo en tiempo real: ${LIGA_TRACKING(id)} — SOYTU · 56 5359 6451`;
       await enviarSms(ahora.clienteTelefono, textoSms);
+    }
+  }
+
+  // ── Servicio CERRADO: manda el PDF de resultado al cliente ──
+  const seAcabaDeCerrar = ahora.estadoAsignacion === "cerrado" && (!antes || antes.estadoAsignacion !== "cerrado");
+  if (seAcabaDeCerrar && ahora.clienteTelefono && ahora.pdfUrl) {
+    const etiquetaEstado = { completado: "se completó ✅", pendiente: "quedó pendiente ⏳", cancelado: "se canceló ❌" }[ahora.estadoFinal] || "se cerró";
+    const textoPdf =
+      `Hola ${ahora.clienteNombre || ""}, tu servicio SOYTU (folio ${ahora.folio || ""}) ${etiquetaEstado}.\n` +
+      `📄 Aquí tienes tu hoja de servicio con el detalle, términos y garantía:\n${ahora.pdfUrl}\n` +
+      `¿Dudas o aclaraciones? Contáctanos: 56 5359 6451 — SOYTU · Creando Conexiones`;
+
+    const cfgWa = await admin.firestore().doc("config/whatsapp").get();
+    const waToken = cfgWa.get("token");
+    const waPhoneId = cfgWa.get("phoneNumberId");
+
+    if (waToken && waPhoneId) {
+      const ok = await enviarWhatsApp(ahora.clienteTelefono, textoPdf, ahora.pdfUrl);
+      if (!ok) await enviarSms(ahora.clienteTelefono, textoPdf);
+    } else {
+      await enviarSms(ahora.clienteTelefono, textoPdf);
     }
   }
 });
@@ -207,21 +219,7 @@ exports.vigilarOrdenesWeb = onDocumentCreated("orders/{id}", async (event) => {
 });
 
 // ════════════════════════════════════════════════════════════
-// RH: avisa al admin cuando el personal pide vacaciones/permiso
-// ════════════════════════════════════════════════════════════
-exports.vigilarVacaciones = onDocumentCreated("vacaciones_solicitudes/{id}", async (event) => {
-  const v = event.data.data();
-  await notificarAdmins({
-    titulo: "🏖️ Solicitud de vacaciones",
-    cuerpo: `${v.empleadoNombre || "Un empleado"} pidió ${v.dias || ""} día(s): ${v.fechaInicio || ""} a ${v.fechaFin || ""}`,
-    tipo: "tecnico_pendiente",
-    extra: { solicitudId: event.params.id },
-  });
-});
-
-// ════════════════════════════════════════════════════════════
 // TÉCNICOS: avisa al admin cuando alguien necesita revisión
-// (alta nueva, o recertificación semestral que lo regresó a pendiente)
 // ════════════════════════════════════════════════════════════
 exports.vigilarTecnicos = onDocumentWritten("tecnicos/{uid}", async (event) => {
   const antes = event.data.before.exists ? event.data.before.data() : null;
@@ -241,6 +239,19 @@ exports.vigilarTecnicos = onDocumentWritten("tecnicos/{uid}", async (event) => {
       extra: { technicianId: event.params.uid },
     });
   }
+});
+
+// ════════════════════════════════════════════════════════════
+// RH: avisa al admin cuando el personal pide vacaciones/permiso
+// ════════════════════════════════════════════════════════════
+exports.vigilarVacaciones = onDocumentCreated("vacaciones_solicitudes/{id}", async (event) => {
+  const v = event.data.data();
+  await notificarAdmins({
+    titulo: "🏖️ Solicitud de vacaciones",
+    cuerpo: `${v.empleadoNombre || "Un empleado"} pidió ${v.dias || ""} día(s): ${v.fechaInicio || ""} a ${v.fechaFin || ""}`,
+    tipo: "tecnico_pendiente",
+    extra: { solicitudId: event.params.id },
+  });
 });
 
 // ════════════════════════════════════════════════════════════
@@ -293,7 +304,7 @@ exports.alertaDiariaTarde = onSchedule({ schedule: "0 19 * * *", timeZone: "Amer
 // ════════════════════════════════════════════════════════════
 exports.revisarRecertificacionExamenes = onSchedule({ schedule: "0 6 * * *", timeZone: "America/Mexico_City" }, async () => {
   const db = admin.firestore();
-  const limiteMs = 180 * 24 * 60 * 60 * 1000; // 180 días
+  const limiteMs = 180 * 24 * 60 * 60 * 1000;
   const ahora = Date.now();
   const snap = await db.collection("tecnicos").get();
 
@@ -329,7 +340,7 @@ exports.revisarRecertificacionExamenes = onSchedule({ schedule: "0 6 * * *", tim
 });
 
 // ════════════════════════════════════════════════════════════
-// RESPALDO DE SMS POR TWILIO (si el gateway del celular no responde)
+// RESPALDO DE SMS POR TWILIO
 // ════════════════════════════════════════════════════════════
 exports.respaldoSmsPorTwilio = onSchedule({ schedule: "every 5 minutes", timeZone: "America/Mexico_City" }, async () => {
   const db = admin.firestore();
@@ -484,7 +495,7 @@ exports.webhookConekta = onRequest(async (req, res) => {
 });
 
 // ════════════════════════════════════════════════════════════
-// WHATSAPP: verificación de webhook de Meta (requisito de configuración)
+// WHATSAPP: verificación de webhook de Meta
 // ════════════════════════════════════════════════════════════
 exports.webhookWhatsApp = onRequest(async (req, res) => {
   const TOKEN_VERIFICACION = "3GbxYV7jw5sBZiHh18u0IK5G4Mg20-9v";
