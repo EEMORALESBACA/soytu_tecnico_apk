@@ -199,6 +199,18 @@ class _DetalleServicioScreenState extends ConsumerState<DetalleServicioScreen> {
         builder: (context, snap) {
           if (!snap.hasData) return const Center(child: CircularProgressIndicator());
           final s = snap.data!;
+
+          // Si la pantalla se abre (o se reabre tras editar/reasignar) y el
+          // servicio ya está "en camino" pero el GPS no está corriendo —por
+          // ejemplo, porque antes se llegó al domicilio y se apagó solo, y
+          // ahora el admin volvió a tocar el servicio— lo reactivamos aquí
+          // mismo, sin que el técnico tenga que volver a tocar "Acudir".
+          if (s.estadoAsignacion == EstadoAsignacion.enCamino && _posicionSub == null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) _iniciarRastreo(s.id, s.clienteLat, s.clienteLng);
+            });
+          }
+
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -283,6 +295,25 @@ class _DetalleServicioScreenState extends ConsumerState<DetalleServicioScreen> {
                       icon: const Icon(Icons.share_location),
                       label: const Text('Reenviar liga de rastreo al cliente'),
                     ),
+                  const SizedBox(height: 8),
+                  // Respaldo manual: si el GPS automático no detectó la
+                  // llegada (por ejemplo, porque el admin reasignó el
+                  // servicio mientras el técnico ya estaba en el domicilio),
+                  // esto habilita "Iniciar servicio" sin esperar al GPS.
+                  OutlinedButton.icon(
+                    onPressed: _procesando
+                        ? null
+                        : () async {
+                            setState(() => _procesando = true);
+                            try {
+                              await ref.read(servicioRepositoryProvider).marcarEnSitio(s.id);
+                            } finally {
+                              if (mounted) setState(() => _procesando = false);
+                            }
+                          },
+                    icon: const Icon(Icons.place),
+                    label: const Text('Ya estoy en el domicilio'),
+                  ),
                   if (_distanciaMetros != null) ...[
                     const SizedBox(height: 8),
                     Text('Distancia al domicilio: ${_distanciaMetros!.toStringAsFixed(0)} m',
