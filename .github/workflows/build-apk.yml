@@ -1,4 +1,5 @@
-name: Build APK SOYTU Tecnico
+name: Build AAB & APK SOYTU Tecnico
+
 on:
   push:
     branches: [ master ]
@@ -8,58 +9,64 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout del código
         uses: actions/checkout@v4
 
-      - name: Java 21
+      - name: Configurar Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: '17'
 
-      - name: Flutter
+      - name: Configurar Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.44.6'
+          flutter-version: '3.24.5'
           channel: stable
+          cache: true
 
       - name: Localizar proyecto Flutter
         run: |
           PUB=$(find . -maxdepth 4 -name pubspec.yaml -not -path "*/.*/*" -not -path "*/packages/*" | head -1)
           if [ -z "$PUB" ]; then
-            echo "ERROR: no se encontro pubspec.yaml"; find . -maxdepth 2 -not -path "*/.git*" | sort; exit 1
+            echo "ERROR: no se encontro pubspec.yaml"
+            find . -maxdepth 2 -not -path "*/.git*" | sort
+            exit 1
           fi
           DIR=$(dirname "$PUB")
           echo "Proyecto Flutter en: $DIR"
           echo "PROJ_DIR=$DIR" >> $GITHUB_ENV
 
-      - name: Dependencias
-        run: cd "$PROJ_DIR" && flutter pub get
+      - name: Limpiar y obtener dependencias
+        run: |
+          cd "$PROJ_DIR"
+          flutter clean
+          flutter pub get
 
-      - name: Llave de firma fija SOYTU
+      - name: Configurar Keystore de firma
         run: |
           if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
             mkdir -p ~/.android
             echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > ~/.android/debug.keystore
-            echo "Firma fija instalada."
+            echo "Keystore configurado correctamente."
           else
-            echo "AVISO: sin secreto KEYSTORE_BASE64; se usara una firma aleatoria."
+            echo "AVISO: No se detectó KEYSTORE_BASE64; se usará la firma de depuración por defecto."
           fi
 
-      - name: Compilar APK release
-        run: cd "$PROJ_DIR" && flutter build apk --release
-
-      - name: Publicar APK como artefacto
-        uses: actions/upload-artifact@v4
-        with:
-          name: soytu-tecnico-apk
-          path: ${{ env.PROJ_DIR }}/build/app/outputs/flutter-apk/app-release.apk
-
-      - name: Compilar AAB para Play Store
+      - name: Compilar App Bundle (AAB para Google Play)
         run: cd "$PROJ_DIR" && flutter build appbundle --release
+
+      - name: Compilar APK (Para pruebas directas)
+        run: cd "$PROJ_DIR" && flutter build apk --release
 
       - name: Publicar AAB como artefacto
         uses: actions/upload-artifact@v4
         with:
           name: soytu-tecnico-aab
           path: ${{ env.PROJ_DIR }}/build/app/outputs/bundle/release/app-release.aab
+
+      - name: Publicar APK como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: soytu-tecnico-apk
+          path: ${{ env.PROJ_DIR }}/build/app/outputs/flutter-apk/app-release.apk
