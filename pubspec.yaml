@@ -1,0 +1,56 @@
+name: soytu_tecnico_apk
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.2.0+12
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  pdf: 3.11.1
+  printing: 5.13.4
+  intl: 0.19.0
+  path_provider: ^2.1.4
+  share_plus: ^10.0.2
+  url_launcher: ^6.3.1
+  soytu_core:
+    path: ../packages/soytu_core
+  firebase_core: 3.6.0
+  firebase_auth: 5.3.1
+  cloud_firestore: 5.4.3
+  firebase_storage: 12.3.2
+  firebase_messaging: 15.1.3
+  flutter_riverpod: ^2.6.1
+  image_picker: ^1.1.2
+  geolocator: ^13.0.1
+  signature: ^5.5.0
+  flutter_local_notifications: ^19.0.0
+  workmanager: ^0.10.9
+  shared_preferences: ^2.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/SOYTU.png
+    - assets/images/icono_tecnico_v2.png
+    - assets/examenes/linea_blanca.json
+    - assets/examenes/electronica_tv.json
+    - assets/examenes/refrigeracion_ac.json
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/icono_tecnico_v2.png"
+  adaptive_icon_background: "#1A237E"
+  adaptive_icon_foreground: "assets/images/icono_tecnico_v2.png"
+  remove_alpha_ios: true
