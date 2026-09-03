@@ -4,6 +4,7 @@ import 'package:soytu_core/soytu_core.dart';
 
 import '../providers/providers.dart';
 import '../services/ubicacion_global.dart';
+import '../services/rastreo_respaldo.dart';
 import 'detalle_servicio_screen.dart';
 import 'ruta_optima_screen.dart';
 
@@ -42,6 +43,7 @@ class ListaServiciosScreen extends ConsumerWidget {
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await UbicacionGlobal.detener();
+              await RastreoRespaldo.cancelar();
               await ref.read(authServiceProvider).cerrarSesion();
             },
           ),

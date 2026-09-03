@@ -12,6 +12,7 @@ import 'examen/examenes_pendientes_screen.dart';
 import 'providers/providers.dart';
 import 'services/notificaciones_locales.dart';
 import 'services/ubicacion_global.dart';
+import 'services/rastreo_respaldo.dart';
 import 'servicios/home_tabs.dart';
 
 void main() async {
@@ -99,6 +100,7 @@ class _RaizAppState extends ConsumerState<_RaizApp> {
       data: (usuario) {
         if (usuario == null) {
           UbicacionGlobal.detener();
+          RastreoRespaldo.cancelar();
           return const LoginScreen();
         }
 
@@ -135,6 +137,9 @@ class _RaizAppState extends ConsumerState<_RaizApp> {
               await notificationService.suscribirATema('admins');
               // Publica la ubicación del técnico para el mapa del panel admin.
               await UbicacionGlobal.iniciar(t.uid, ref.read(tecnicoRepositoryProvider));
+              // Red de seguridad: sigue rastreando (cada 15 min) aunque el
+              // técnico cierre la app desde recientes o no la abra un día.
+              await RastreoRespaldo.registrarUnaVez(t.uid);
             });
 
             return const HomeTabs();

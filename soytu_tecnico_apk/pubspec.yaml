@@ -29,6 +29,8 @@ dependencies:
   geolocator: ^13.0.1
   signature: ^5.5.0
   flutter_local_notifications: ^19.0.0
+  workmanager: ^0.5.2
+  shared_preferences: ^2.3.2
 
 dev_dependencies:
   flutter_test:
@@ -40,7 +42,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/SOYTU.png
-    - assets/images/icono_tecnico.png
+    - assets/images/icono_tecnico_v2.png
     - assets/examenes/linea_blanca.json
     - assets/examenes/electronica_tv.json
     - assets/examenes/refrigeracion_ac.json
@@ -48,7 +50,7 @@ flutter:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/images/icono_tecnico.png"
+  image_path: "assets/images/icono_tecnico_v2.png"
   adaptive_icon_background: "#1A237E"
-  adaptive_icon_foreground: "assets/images/icono_tecnico.png"
+  adaptive_icon_foreground: "assets/images/icono_tecnico_v2.png"
   remove_alpha_ios: true
