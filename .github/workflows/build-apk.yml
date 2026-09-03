@@ -3,6 +3,7 @@ on:
   push:
     branches: [ master ]
   workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -54,11 +55,11 @@ jobs:
           name: soytu-tecnico-apk
           path: ${{ env.PROJ_DIR }}/build/app/outputs/flutter-apk/app-release.apk
 
-          name: Compilar AAB para Play Store
-      run: flutter build appbundle --release
+      - name: Compilar AAB para Play Store
+        run: cd "$PROJ_DIR" && flutter build appbundle --release
 
-    - name: Publicar AAB como artefacto
-      uses: actions/upload-artifact@v4
-      with:
-        name: soytu-tecnico-aab
-        path: build/app/outputs/bundle/release/app-release.aab
+      - name: Publicar AAB como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: soytu-tecnico-aab
+          path: ${{ env.PROJ_DIR }}/build/app/outputs/bundle/release/app-release.aab
