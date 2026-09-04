@@ -37,7 +37,7 @@ class RastreoRespaldo {
       _tareaRastreoRespaldo,
       frequency: const Duration(minutes: 15), // mínimo permitido por Android
       constraints: Constraints(networkType: NetworkType.connected),
-      existingWorkPolicy: ExistingWorkPolicy.keep, // no duplicar si ya existe
+      existingWorkPolicy: ExistingPeriodicWorkPolicy.keep, // no duplicar si ya existe
     );
   }
 
