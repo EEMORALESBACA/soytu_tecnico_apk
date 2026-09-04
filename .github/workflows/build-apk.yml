@@ -38,11 +38,16 @@ jobs:
       - name: Llave de firma fija SOYTU
         run: |
           if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
-            mkdir -p ~/.android
-            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > ~/.android/debug.keystore
-            echo "Firma fija instalada."
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > "$PROJ_DIR/android/soytu-release.keystore"
+            cat > "$PROJ_DIR/android/key.properties" <<EOF
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=soytu-release.keystore
+          EOF
+            echo "Firma de RELEASE instalada correctamente."
           else
-            echo "AVISO: sin secreto KEYSTORE_BASE64; se usara una firma aleatoria."
+            echo "AVISO: sin secreto KEYSTORE_BASE64; se usara firma debug (Play Store la va a rechazar)."
           fi
 
       - name: Compilar APK release
