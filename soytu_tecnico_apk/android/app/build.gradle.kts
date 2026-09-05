@@ -27,7 +27,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.soytu.tecnico"
+        applicationId = "com.soytu"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
