@@ -1,17 +1,11 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:signature/signature.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:soytu_core/soytu_core.dart';
 
 import '../../providers/providers.dart';
-import '../../services/reincidencia_aviso.dart';
 import '../formulario_servicio_screen.dart';
-import 'servicios_home_navigator.dart';
+import 'cierre_exitoso_screen.dart';
 
 const _verde = Color(0xFF2E7D32);
 
@@ -101,7 +95,9 @@ class _CierreCompletadoScreenState extends ConsumerState<CierreCompletadoScreen>
         firmaCliente: firmaBytes,
       );
 
-      final pdfBytes = await HojaServicioPdf().generar(orden);
+      // Marca del servicio: SOYTU o la empresa que renta la plataforma (VMX Lab…)
+      final marcaSrv = await MarcaRepository.cargar(s.empresaId);
+      final pdfBytes = await HojaServicioPdf(marca: marcaSrv).generar(orden);
 
       final storage = ref.read(storageServiceProvider);
       final pdfUrl = await storage.subirPdf(s.id, pdfBytes);
@@ -141,89 +137,34 @@ class _CierreCompletadoScreenState extends ConsumerState<CierreCompletadoScreen>
       );
 
       // Aviso de reincidencia: mismo número de serie ya reparado antes.
-      final reincidencias = await svcRepo.contarReincidencias(serie, excluirId: s.id);
+      var reincidencias = 0;
+      try {
+        reincidencias = await svcRepo.contarReincidencias(serie, excluirId: s.id);
+      } catch (_) {}
 
-      final dir = await getApplicationDocumentsDirectory();
-      final archivo = File('${dir.path}/HojaServicio_${s.folio}.pdf');
-      await archivo.writeAsBytes(pdfBytes);
-      await Share.shareXFiles(
-        [XFile(archivo.path, mimeType: 'application/pdf')],
-        text: 'SOYTU — Hoja de servicio ${s.folio}. Gracias por su confianza. soytu.com.mx',
+      // En lugar del menú de compartir: pantalla con la hoja de servicio
+      // del cliente y la encuesta a un toque.
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => CierreExitosoScreen(
+            servicio: s,
+            marca: marcaSrv,
+            pdfBytes: pdfBytes,
+            pdfUrl: pdfUrl,
+            reincidencias: reincidencias,
+          ),
+        ),
+        (route) => route.isFirst,
       );
-
-      // Encuesta "¿Cómo te atendí?": el técnico elige cómo la contesta el cliente.
-      if (mounted) await _ofrecerEncuesta(s);
-
+    } catch (e) {
       if (mounted) {
-        if (reincidencias > 0) {
-          await mostrarAvisoReincidencia(context, reincidencias);
-        }
-        volverAlInicioDeServicios(context);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            duration: const Duration(seconds: 8),
+            content: Text('No se pudo terminar el cierre: $e')));
       }
     } finally {
       if (mounted) setState(() => _procesando = false);
-    }
-  }
-
-  String _telWa(String tel) {
-    var t = tel.replaceAll(RegExp(r'[^0-9]'), '');
-    if (t.length == 10) return '521$t';
-    if (t.length == 12 && t.startsWith('52')) return '521${t.substring(2)}';
-    return t;
-  }
-
-  String _ligaEncuesta(ServicioAsignado s, String modo) =>
-      'https://soytu.com.mx/encuesta.html?servicio=${s.id}&modo=$modo';
-
-  /// Al cerrar como completado: el cliente contesta en el celular del técnico
-  /// o se le manda la liga por WhatsApp. La misma página toma la marca
-  /// del servicio (SOYTU o la empresa que renta la plataforma, p. ej. VMX Lab).
-  Future<void> _ofrecerEncuesta(ServicioAsignado s) async {
-    final tieneTel = (s.clienteTelefono ?? '').trim().isNotEmpty;
-    final opcion = await showDialog<String>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Encuesta de satisfacción'),
-        content: const Text(
-            'Pídele al cliente que califique tu servicio. Puede contestarla ahora en tu celular '
-            'o recibirla por WhatsApp.'),
-        actionsOverflowDirection: VerticalDirection.down,
-        actionsOverflowButtonSpacing: 8,
-        actions: [
-          FilledButton.icon(
-            style: FilledButton.styleFrom(backgroundColor: _verde),
-            onPressed: () => Navigator.pop(ctx, 'presencial'),
-            icon: const Icon(Icons.phone_android),
-            label: const Text('Contestar en este celular'),
-          ),
-          if (tieneTel)
-            OutlinedButton.icon(
-              onPressed: () => Navigator.pop(ctx, 'whatsapp'),
-              icon: const Icon(Icons.chat),
-              label: const Text('Enviar por WhatsApp'),
-            ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, 'omitir'),
-            child: const Text('Ahora no'),
-          ),
-        ],
-      ),
-    );
-
-    if (opcion == 'presencial') {
-      final uri = Uri.parse(_ligaEncuesta(s, 'presencial'));
-      var ok = false;
-      try {
-        ok = await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
-      } catch (_) {}
-      if (!ok) await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else if (opcion == 'whatsapp' && tieneTel) {
-      final mensaje = Uri.encodeComponent(
-          'Su servicio ${s.folio} ha sido COMPLETADO ✅. Le compartimos su hoja de servicio en PDF. '
-          '¿Cómo lo atendí? Califique mi servicio en 1 minuto: ${_ligaEncuesta(s, 'whatsapp')}');
-      final uri = Uri.parse('https://wa.me/${_telWa(s.clienteTelefono!)}?text=$mensaje');
-      if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 

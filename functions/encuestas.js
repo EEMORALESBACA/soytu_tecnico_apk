@@ -106,10 +106,37 @@ exports.perfilAlEditarTecnico = onDocumentWritten("tecnicos/{uid}", async (event
   if (huella(antes) !== huella(ahora)) await recalcularPerfil(uid);
 });
 
+// 3b) Marca pública: copia de solo lectura de la identidad de cada empresa
+//     rentataria (nombre, logo, colores). La usan la app del técnico (PDF)
+//     y encuesta.html sin exponer códigos de acceso ni datos internos.
+async function publicarMarca(id, data) {
+  const ref = admin.firestore().doc(`marcasPublicas/${id}`);
+  if (!data) { await ref.delete().catch(() => {}); return; }
+  const b = data.branding || {};
+  await ref.set({
+    nombre: b.nombreMostrado || data.nombre || "",
+    logoUrl: b.logoUrl || null,
+    colorPrimario: b.colorPrimario || null,
+    colorSecundario: b.colorSecundario || null,
+    temaEncuesta: b.temaEncuesta || null,
+    telefono: b.telefono || data.telefono || null,
+    activo: data.activo !== false,
+    actualizado: new Date().toISOString(),
+  });
+}
+exports.publicarMarcaEmpresa = onDocumentWritten("empresas_licencia/{id}", async (event) => {
+  const ahora = event.data.after.exists ? event.data.after.data() : null;
+  await publicarMarca(event.params.id, ahora);
+});
+
 // 4) Respaldo nocturno: recalcula a todos (y llena los perfiles la primera vez).
 exports.recalcularPerfilesNoche = onSchedule(
   { schedule: "30 3 * * *", timeZone: "America/Mexico_City" },
   async () => {
+    const empresas = await admin.firestore().collection("empresas_licencia").get();
+    for (const d of empresas.docs) {
+      try { await publicarMarca(d.id, d.data()); } catch (e) { console.error("marca", d.id, e.message); }
+    }
     const snap = await admin.firestore().collection("tecnicos").get();
     for (const d of snap.docs) {
       try { await recalcularPerfil(d.id); } catch (e) { console.error("perfil", d.id, e.message); }

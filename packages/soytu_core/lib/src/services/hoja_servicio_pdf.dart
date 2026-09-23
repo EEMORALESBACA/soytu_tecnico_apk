@@ -5,6 +5,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
+import '../models/marca_servicio.dart';
 import '../models/orden_servicio.dart';
 
 /// ============================================================
@@ -14,8 +15,6 @@ import '../models/orden_servicio.dart';
 /// ============================================================
 class HojaServicioPdf {
   // ------- Paleta corporativa SOYTU -------
-  static const _indigo = PdfColor.fromInt(0xFF1A237E); // Índigo SOYTU
-  static const _indigoLight = PdfColor.fromInt(0xFF3949AB);
   static const _grisFondo = PdfColor.fromInt(0xFFF4F5FA);
   static const _grisLinea = PdfColor.fromInt(0xFFD8DBE8);
   static const _grisTexto = PdfColor.fromInt(0xFF4A4F63);
@@ -23,10 +22,17 @@ class HojaServicioPdf {
   static const _amarillo = PdfColor.fromInt(0xFFF9A825);
   static const _rojo = PdfColor.fromInt(0xFFC62828);
 
-  /// Logo opcional (PNG). Si es null se dibuja el logotipo tipográfico.
+  /// Logo opcional (PNG). Si es null se usa el de la marca o el logotipo tipográfico.
   final Uint8List? logoBytes;
 
-  HojaServicioPdf({this.logoBytes});
+  /// Marca con la que se emite la hoja (SOYTU o la empresa rentataria).
+  final MarcaServicio marca;
+
+  HojaServicioPdf({this.logoBytes, this.marca = MarcaServicio.soytu});
+
+  PdfColor get _indigo => PdfColor.fromInt(marca.colorPrimario);
+  PdfColor get _indigoLight => PdfColor.fromInt(marca.colorSecundario);
+  Uint8List? get _logo => logoBytes ?? marca.logoBytes;
 
   PdfColor _colorEstado(EstadoServicio e) => switch (e) {
         EstadoServicio.completado => _verde,
@@ -39,8 +45,8 @@ class HojaServicioPdf {
   Future<Uint8List> generar(OrdenServicio orden) async {
     final doc = pw.Document(
       title: 'Hoja de Servicio ${orden.folio}',
-      author: 'SOYTU — Creando Conexiones',
-      creator: 'SOYTU App Técnico',
+      author: marca.nombre,
+      creator: '${marca.nombre} · App Técnico',
     );
 
     final base = await PdfGoogleFonts.interRegular();
@@ -83,7 +89,7 @@ class HojaServicioPdf {
                   _dato('ID Técnico', orden.tecnicoId),
                   if (orden.tecnicoTelefono != null)
                     _dato('Teléfono', orden.tecnicoTelefono!),
-                  _dato('Verificado por', 'SOYTU · Identidad validada ✓'),
+                  _dato('Verificado por', '${marca.nombre} · Identidad validada ✓'),
                 ]),
               ),
             ],
@@ -197,7 +203,7 @@ class HojaServicioPdf {
                     pw.Text('🛡️  ', style: const pw.TextStyle(fontSize: 11)),
                     pw.Expanded(
                       child: pw.Text(
-                        'Este servicio de cargo cuenta con 90 días de garantía SOYTU sobre la '
+                        'Este servicio de cargo cuenta con 90 días de garantía ${marca.nombre} sobre la '
                         'mano de obra y las refacciones instaladas, a partir de la fecha de '
                         'esta hoja de servicio. La garantía no cubre daños por mal uso, '
                         'variaciones de voltaje ajenas al equipo, ni fallas no relacionadas '
@@ -211,14 +217,14 @@ class HojaServicioPdf {
                 'Al firmar de conformidad, el cliente confirma que el servicio descrito en '
                 'esta hoja fue realizado a su satisfacción y que el técnico se identificó '
                 'correctamente antes de iniciar. Cualquier aclaración sobre el diagnóstico, '
-                'el cobro o la garantía debe reportarse directamente a SOYTU dentro de las '
+                'el cobro o la garantía debe reportarse directamente a ${marca.nombre} dentro de las '
                 'siguientes 24 horas al teléfono de contacto que aparece abajo — no con el '
                 'técnico directamente.',
                 style: const pw.TextStyle(fontSize: 7.8, lineSpacing: 1.6),
               ),
               pw.SizedBox(height: 6),
               pw.Text(
-                'SOYTU no se hace responsable por fallas preexistentes no reportadas por el '
+                '${marca.nombre} no se hace responsable por fallas preexistentes no reportadas por el '
                 'cliente al momento del servicio, ni por daños derivados de instalaciones '
                 'eléctricas ajenas a la Norma Oficial Mexicana correspondiente.',
                 style: pw.TextStyle(fontSize: 7.8, lineSpacing: 1.6, color: _grisTexto),
@@ -309,7 +315,7 @@ class HojaServicioPdf {
             ),
             child: pw.Text(
               'Este documento es el respaldo oficial de su servicio y conserva '
-              'validez ante SOYTU — Creando Conexiones. Nuestros técnicos están '
+              'validez ante ${marca.nombre}. Nuestros técnicos están '
               'verificados con identificación oficial y validación biométrica. '
               'Conserve esta hoja para cualquier aclaración o seguimiento de garantía.',
               style: pw.TextStyle(
@@ -335,7 +341,7 @@ class HojaServicioPdf {
           padding:
               const pw.EdgeInsets.symmetric(horizontal: 18, vertical: 14),
           decoration: pw.BoxDecoration(
-            gradient: const pw.LinearGradient(
+            gradient: pw.LinearGradient(
               colors: [_indigo, _indigoLight],
               begin: pw.Alignment.centerLeft,
               end: pw.Alignment.centerRight,
@@ -346,21 +352,21 @@ class HojaServicioPdf {
             crossAxisAlignment: pw.CrossAxisAlignment.center,
             children: [
               // Logo o logotipo tipográfico
-              if (logoBytes != null)
+              if (_logo != null)
                 pw.Container(
                     height: 34,
-                    child: pw.Image(pw.MemoryImage(logoBytes!)))
+                    child: pw.Image(pw.MemoryImage(_logo!)))
               else
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Text('SOYTU',
+                    pw.Text(marca.nombre,
                         style: pw.TextStyle(
                             color: PdfColors.white,
                             fontSize: 20,
                             font: semi,
                             letterSpacing: 2)),
-                    pw.Text('CREANDO CONEXIONES',
+                    pw.Text(marca.lema,
                         style: const pw.TextStyle(
                             color: PdfColor.fromInt(0xFFC5CAE9),
                             fontSize: 6.5,
@@ -416,7 +422,7 @@ class HojaServicioPdf {
         decoration: const pw.BoxDecoration(
             border: pw.Border(top: pw.BorderSide(color: _grisLinea))),
         child: pw.Row(children: [
-          pw.Text('soytu.com.mx  ·  Estado de México / CDMX  ·  Contacto: 56 5359 6451',
+          pw.Text(marca.pie,
               style: const pw.TextStyle(fontSize: 7, color: _grisTexto)),
           pw.Spacer(),
           pw.Text('Folio ${o.folio}  ·  Página ${ctx.pageNumber} de ${ctx.pagesCount}',

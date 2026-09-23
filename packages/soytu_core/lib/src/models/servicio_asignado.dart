@@ -84,6 +84,9 @@ class ServicioAsignado {
   /// Fecha futura programada para atender el servicio (reagendado).
   final DateTime? fechaProgramada;
 
+  /// Empresa que renta la plataforma (null = servicio propio de SOYTU).
+  final String? empresaId;
+
   const ServicioAsignado({
     required this.id,
     required this.folio,
@@ -118,6 +121,7 @@ class ServicioAsignado {
     this.motivoPendiente,
     this.refrendos = 0,
     this.fechaProgramada,
+    this.empresaId,
   });
 
   Map<String, dynamic> toMap() => {
@@ -153,6 +157,7 @@ class ServicioAsignado {
         'motivoPendiente': motivoPendiente,
         'refrendos': refrendos,
         'fechaProgramada': fechaProgramada?.toIso8601String(),
+        'empresaId': empresaId,
       };
 
   factory ServicioAsignado.fromMap(String id, Map<String, dynamic> map) {
@@ -194,6 +199,7 @@ class ServicioAsignado {
       motivoPendiente: map['motivoPendiente'] as String?,
       refrendos: (map['refrendos'] as num?)?.toInt() ?? 0,
       fechaProgramada: fecha('fechaProgramada'),
+      empresaId: map['empresaId'] as String?,
     );
   }
 
@@ -244,6 +250,7 @@ class ServicioAsignado {
       motivoPendiente: motivoPendiente,
       refrendos: refrendos,
       fechaProgramada: fechaProgramada ?? this.fechaProgramada,
+      empresaId: empresaId,
     );
   }
 }

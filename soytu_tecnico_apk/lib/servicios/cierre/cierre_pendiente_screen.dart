@@ -81,7 +81,7 @@ class _CierrePendienteScreenState extends ConsumerState<CierrePendienteScreen> {
         refaccionesFaltantes: _motivo == 'Refacción' ? _refaccionesFinales : const [],
       );
 
-      final pdfBytes = await HojaServicioPdf().generar(orden);
+      final pdfBytes = await HojaServicioPdf(marca: await MarcaRepository.cargar(s.empresaId)).generar(orden);
       final storage = ref.read(storageServiceProvider);
       final pdfUrl = await storage.subirPdf(s.id, pdfBytes);
       if (widget.datos.videoFalla != null) {
