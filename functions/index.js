@@ -190,6 +190,9 @@ exports.vigilarServicios = onDocumentWritten("servicios/{id}", async (event) => 
     const textoPdf =
       `Hola ${ahora.clienteNombre || ""}, tu servicio SOYTU (folio ${ahora.folio || ""}) ${etiquetaEstado}.\n` +
       `📄 Aquí tienes tu hoja de servicio con el detalle, términos y garantía:\n${ahora.pdfUrl}\n` +
+      (ahora.estadoFinal === "completado" && !ahora.encuesta
+        ? `⭐ ¿Cómo te atendimos? Califica a tu técnico (1 minuto): https://soytu.com.mx/encuesta.html?servicio=${id}&modo=whatsapp\n`
+        : "") +
       `¿Dudas o aclaraciones? Contáctanos: 56 5359 6451 — SOYTU · Creando Conexiones`;
 
     const cfgWa = await admin.firestore().doc("config/whatsapp").get();
@@ -515,3 +518,6 @@ exports.webhookWhatsApp = onRequest(async (req, res) => {
   console.log("Evento de WhatsApp recibido:", JSON.stringify(req.body).slice(0, 500));
   res.status(200).send("EVENT_RECEIVED");
 });
+
+// Encuesta "¿Cómo te atendí?" y perfil público del técnico
+Object.assign(exports, require("./encuestas"));
