@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:soytu_core/soytu_core.dart';
 
 import '../widgets/captura_camara.dart';
+import '../widgets/fotos_servicio.dart';
 import 'cierre/cierre_completado_screen.dart';
 import 'cierre/cierre_pendiente_screen.dart';
 import 'cierre/cierre_cancelado_screen.dart';
@@ -169,7 +170,14 @@ class _FormularioServicioScreenState extends State<FormularioServicioScreen> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: _esCargo ? _buildCargo(context) : _buildGarantia(context),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            FotosServicioCard(servicioId: widget.servicio.id),
+            const SizedBox(height: 16),
+            _esCargo ? _buildCargo(context) : _buildGarantia(context),
+          ],
+        ),
       ),
     );
   }
@@ -260,18 +268,24 @@ class _FormularioServicioScreenState extends State<FormularioServicioScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             CapturaCamara(
+              permitirGaleria: true,
+              guardarEnGaleriaAlTomar: true,
               etiqueta: 'Foto del equipo',
               obligatoria: true,
               onCapturada: (b) => setState(() => _datos.fotoEquipo = b),
             ),
             const SizedBox(height: 14),
             CapturaCamara(
+              permitirGaleria: true,
+              guardarEnGaleriaAlTomar: true,
               etiqueta: 'Foto de la placa / no. de serie',
               obligatoria: true,
               onCapturada: (b) => setState(() => _datos.fotoPlaca = b),
             ),
             const SizedBox(height: 14),
             CapturaCamara(
+              permitirGaleria: true,
+              guardarEnGaleriaAlTomar: true,
               etiqueta: 'Foto del ticket / factura de compra',
               obligatoria: true,
               onCapturada: (b) => setState(() => _datos.fotoTicketCompra = b),
@@ -318,6 +332,8 @@ class _FormularioServicioScreenState extends State<FormularioServicioScreen> {
             const SizedBox(height: 6),
             if (_datos.videoFalla == null)
               CapturaCamara(
+              permitirGaleria: true,
+              guardarEnGaleriaAlTomar: true,
                 etiqueta: 'Foto de la falla',
                 onCapturada: (b) => setState(() => _datos.fotoFalla = b),
               )
@@ -416,7 +432,11 @@ class _FormularioServicioScreenState extends State<FormularioServicioScreen> {
             icon: const Icon(Icons.camera_alt_outlined, color: _indigo),
             onPressed: () async {
               final archivo = await ImagePicker().pickImage(source: ImageSource.camera, imageQuality: 80);
-              if (archivo != null) onFoto(await archivo.readAsBytes());
+              if (archivo != null) {
+                final b = await archivo.readAsBytes();
+                await guardarEnGaleria(b);
+                onFoto(b);
+              }
             },
           ),
         ],

@@ -65,7 +65,7 @@ class MarcaRepository {
       nombre: nombreFinal,
       lema: 'SERVICIO TÉCNICO',
       colorPrimario: color('colorPrimario') ?? (esVmx ? 0xFF033649 : 0xFF263238),
-      colorSecundario: color('colorSecundario') ?? (esVmx ? 0xFF1A6B86 : 0xFF455A64),
+      colorSecundario: color('colorSecundario') ?? (esVmx ? 0xFF176B87 : 0xFF455A64),
       logoBytes: logo,
       pie: tel == null || tel.isEmpty
           ? '$nombreFinal  ·  Estado de México / CDMX'

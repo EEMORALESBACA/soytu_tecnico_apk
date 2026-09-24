@@ -2,7 +2,7 @@ name: soytu_tecnico_apk
 description: "A new Flutter project."
 publish_to: 'none'
 
-version: 1.2.2+14
+version: 1.2.3+15
 
 environment:
   sdk: ^3.12.2
@@ -26,6 +26,7 @@ dependencies:
   firebase_messaging: 15.1.3
   flutter_riverpod: ^2.6.1
   image_picker: ^1.1.2
+  gal: ^2.3.1
   geolocator: ^13.0.1
   signature: ^5.5.0
   flutter_local_notifications: ^19.0.0

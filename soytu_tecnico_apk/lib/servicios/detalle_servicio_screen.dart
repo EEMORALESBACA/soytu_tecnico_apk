@@ -8,6 +8,7 @@ import 'package:soytu_core/soytu_core.dart';
 
 import '../providers/providers.dart';
 import '../services/notificaciones_locales.dart';
+import '../widgets/fotos_servicio.dart';
 import 'verificacion_qr_screen.dart';
 
 const _indigo = Color(0xFF1A237E);
@@ -227,7 +228,17 @@ class _DetalleServicioScreenState extends ConsumerState<DetalleServicioScreen> {
                   _dato('No. serie', s.numeroSerie),
                   _dato('Falla reportada', s.fallaReportada),
                 ]),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
+                if (s.estadoAsignacion == EstadoAsignacion.enCamino ||
+                    s.estadoAsignacion == EstadoAsignacion.enSitio ||
+                    s.estadoAsignacion == EstadoAsignacion.cerrado) ...[
+                  FotosServicioCard(
+                    servicioId: s.id,
+                    soloLectura: s.estadoAsignacion == EstadoAsignacion.cerrado,
+                  ),
+                  const SizedBox(height: 10),
+                ],
+                const SizedBox(height: 6),
                 if (s.fechaProgramada != null)
                   Container(
                     margin: const EdgeInsets.only(bottom: 10),
