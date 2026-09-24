@@ -24,7 +24,11 @@ jobs:
 
       - name: Localizar proyecto Flutter
         run: |
-          PUB=$(find . -maxdepth 4 -name pubspec.yaml -not -path "*/.*/*" -not -path "*/packages/*" | head -1)
+          if [ -f soytu_tecnico_apk/pubspec.yaml ]; then
+            PUB=soytu_tecnico_apk/pubspec.yaml
+          else
+            PUB=$(find . -maxdepth 4 -name pubspec.yaml -not -path "*/.*/*" -not -path "*/packages/*" | head -1)
+          fi
           if [ -z "$PUB" ]; then
             echo "ERROR: no se encontro pubspec.yaml"; find . -maxdepth 2 -not -path "*/.git*" | sort; exit 1
           fi
